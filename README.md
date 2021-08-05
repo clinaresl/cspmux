@@ -1,3 +1,7 @@
+<script type="text/javascript"
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS_CHTML"></script>
+
+
 # Introduction #
 
 `cspmux` is a constraint satsifaction (CSP) solver based on binary mutex. It is implemented in C++ and distributed as a library.
