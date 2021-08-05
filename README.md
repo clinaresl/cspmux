@@ -1,35 +1,16 @@
-<style TYPE="text/css">
-code.has-jax {font: inherit; font-size: 100%; background: inherit; border: inherit;}
-</style>
-<script type="text/x-mathjax-config">
-MathJax.Hub.Config({
-    tex2jax: {
-        inlineMath: [['$','$'], ['\\(','\\)']],
-        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'] // removed 'code' entry
-    }
-});
-MathJax.Hub.Queue(function() {
-    var all = MathJax.Hub.getAllJax(), i;
-    for(i = 0; i < all.length; i += 1) {
-        all[i].SourceElement().parentNode.className += ' has-jax';
-    }
-});
-</script>
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-AMS_HTML-full"></script>
-
 August, 5, 2021
 
 # Introduction #
 
 `cspmux` is a constraint satsifaction (CSP) solver based on binary mutex. It is implemented in C++ and distributed as a library.
 
-`cspmux` defines a *Constraint Satisfaction Task* as a triplet \( (X, D, M) \) where:
+`cspmux` defines a *Constraint Satisfaction Task* as a triplet *(X, D, M)* where:
 
-* $X$ is the set of /variables/
+* *X* is the set of *variables*
 
-* $D$ is the set of domains of each variable so that $$D_i$$ is the set of plausible values of the /i/-th variable $$x_i$$
+* *D* is the set of *domains* of each variable so that *Di* is the set of plausible *values* of the *i*-th variable *xi*
 
-* $$M$$ is the set of mutex (mutually exclusive) pairs: $$(d_i^u)$$ is mutex with $$(d_j^v)$$ if and only if $$x_i$$ and $$x_j$$ can not take simultaneously the values $$d^u$$ and $$d^v$$ respectively.
+* *M* is the set of mutexes (mutually exclusive pairs): two variables *x_i* and *x_j*  have a mutex *(di, dj)* if and only if they can not take simultaneously the values *di* and *dj* respectively.
 
 
 # Dependencies #
