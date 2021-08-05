@@ -2,7 +2,7 @@
 
 `cspmux` is a constraint satsifaction (CSP) solver based on binary mutex. It is implemented in C++ and distributed as a library.
 
-`cspmux` defines a /Constraint Satisfaction Task/ as a triplet $(X, D, M)$ where:
+`cspmux` defines a *Constraint Satisfaction Task* as a triplet //( (X, D, M) //) where:
 
 * $X$ is the set of /variables/
 
