@@ -12,12 +12,6 @@
 
 #include "cspmux.h"
 
-string greet (string name){
-
-    return " Hi " + name + "!";
-}
-
-
 
 // Local Variables:
 // mode:c++

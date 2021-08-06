@@ -14,7 +14,7 @@
 
 #include<vector>
 
-#include "bmap_t.h"
+#include "MUXbmap_t.h"
 
 // constants
 
@@ -40,6 +40,9 @@ class multibmap_t {
         multibmap_t (const size_t len, const size_t nbbits) :
             _multibmap { vector<bmap_t>(len, bmap_t (nbbits)) }
         {}
+
+        // The copy constructor is strictly forbidden
+        multibmap_t (const multibmap_t& right) = delete;
 
         // accessors
 

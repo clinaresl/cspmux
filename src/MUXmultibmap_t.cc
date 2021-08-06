@@ -13,7 +13,7 @@
 
 #include<stdexcept>
 
-#include "multibmap_t.h"
+#include "MUXmultibmap_t.h"
 
 // get the value of the j-th bit of the i-th entry
 bool multibmap_t::get (const size_t i, const size_t j) const {

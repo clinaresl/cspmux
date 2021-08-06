@@ -1,8 +1,8 @@
 // -*- coding: utf-8 -*-
-// cspmux.h
+// TSTdefs.h
 // -----------------------------------------------------------------------------
 //
-// Started on <jue 05-08-2021 21:58:08.645514969 (1628193488)>
+// Started on <sáb 07-08-2021 00:58:59.720149236 (1628290739)>
 // Carlos Linares López <carlos.linares@uc3m.es>
 //
 
@@ -10,20 +10,17 @@
 // Description
 //
 
-#ifndef _CSPMUX_H_
-#define _CSPMUX_H_
-
-#include<string>
+#ifndef _TSTDEFS_H_
+#define _TSTDEFS_H_
 
 using namespace std;
 
-/* Data structures */
-#include "MUXbmap_t.h"
-#include "MUXmultibmap_t.h"
+// predefined number of executions of each unit test
+const int NBTESTS = 10000;
 
-#endif // _CSPMUX_H_
+#endif // _TSTDEFS_H_
 
 // Local Variables:
-// mode:c++
+// mode:cpp
 // fill-column:80
 // End:

@@ -6,3 +6,4 @@ project (cspmux VERSION 1.0)
 # the project's entire directory structure.
 add_subdirectory (src)
 add_subdirectory (examples)
+add_subdirectory (tests)

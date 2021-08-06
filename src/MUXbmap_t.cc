@@ -27,14 +27,14 @@
 
 #include<stdexcept>
 
-#include "bmap.h"
+#include "MUXbmap_t.h"
 
 // get the value at the i-th bit
-bool bmap_t::get (const int i) const {
+bool bmap_t::get (const size_t i) const {
 
     // first, make sure the value requested is within the length of the bit map
     if (i < 0 || i >= (int) size ()) {
-        throw out_of_range ("[bmap] out of bounds");
+        throw out_of_range ("[bmap_t::get] out of bounds");
     }
 
     // get the location of the required bit. It resides in the i-th byte which
@@ -50,11 +50,11 @@ bool bmap_t::get (const int i) const {
 }
 
 // set the value of the i-th bit
-void bmap_t::set (const int i, const bool value) {
+void bmap_t::set (const size_t i, const bool value) {
 
     // first, make sure the value requested is within the length of the bit map
     if (i < 0 || i >= (int) size ()) {
-        throw out_of_range ("[bmap] out of bounds");
+        throw out_of_range ("[bmap_t::set] out of bounds");
     }
 
     // get the location of the required bit. It resides in the i-th byte which
@@ -79,6 +79,6 @@ void bmap_t::set (const int i, const bool value) {
 
 
 // Local Variables:
-// mode:c++
+// mode:cpp
 // fill-column:80
 // End:

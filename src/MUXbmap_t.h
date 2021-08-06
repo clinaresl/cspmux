@@ -38,7 +38,7 @@ class bmap_t {
         bmap_t () = delete;
 
         // Explicit constructor - given a number of bits to store
-        bmap_t (int len) {
+        bmap_t (const size_t len) {
 
             // compute the required number of bytes to store up to len bits.
             // Note that if len is not divisible by the number of bits in a byte
@@ -71,6 +71,6 @@ class bmap_t {
 #endif // _BMAP_T_H_
 
 // Local Variables:
-// mode:c++
+// mode:cpp
 // fill-column:80
 // End:

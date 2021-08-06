@@ -10,7 +10,7 @@ August, 5, 2021
 
 * *D* is the set of *domains* of each variable so that *Di* is the set of plausible *values* of the *i*-th variable *xi*
 
-* *M* is the set of mutexes (mutually exclusive pairs): two variables *x_i* and *x_j*  have a mutex *(di, dj)* if and only if they can not take simultaneously the values *di* and *dj* respectively.
+* *M* is the set of mutexes (mutually exclusive pairs): two variables *xi* and *xj*  have a mutex *(di, dj)* if and only if they can not take simultaneously the values *di* and *dj* respectively.
 
 
 # Dependencies #
