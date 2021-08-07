@@ -15,7 +15,6 @@
 #include<vector>
 
 // constants
-
 using namespace std;
 
 //
@@ -29,7 +28,8 @@ class bmap_t {
         // (get/set) individually
         vector<char> _bmap;
 
-        // the length is stored separately
+        // the length is stored separately and it is defined as the number of
+        // bytes necessary to store the bitmap
         size_t _length;
 
     public:
@@ -61,9 +61,12 @@ class bmap_t {
         void set (const size_t i, const bool value);
 
         // public services
+
+        // return the number of bits stored in this bitmap
         size_t size () const {
 
-            // since each byte contains 8 bits ...
+            // since _length is the number of bytes multiply by the number of
+            // bits in a byte
             return 8*_length;
         }
 };

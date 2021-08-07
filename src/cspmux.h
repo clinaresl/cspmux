@@ -18,8 +18,8 @@
 using namespace std;
 
 /* Data structures */
-#include "MUXbmap_t.h"
-#include "MUXmultibmap_t.h"
+#include "structs/MUXbmap_t.h"
+#include "structs/MUXmultibmap_t.h"
 
 #endif // _CSPMUX_H_
 

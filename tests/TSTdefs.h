@@ -16,7 +16,10 @@
 using namespace std;
 
 // predefined number of executions of each unit test
-const int NBTESTS = 10000;
+const int NB_TESTS = 10000;
+
+// Maximum length of the bitmaps: 8 Gbytes
+const size_t MAX_LENGTH = 64000000000;
 
 #endif // _TSTDEFS_H_
 

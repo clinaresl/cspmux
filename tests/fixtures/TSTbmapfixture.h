@@ -19,7 +19,7 @@
 #include "gtest/gtest.h"
 
 #include "../TSTdefs.h"
-#include "../../src/MUXbmap_t.h"
+#include "../../src/structs/MUXbmap_t.h"
 
 // Class definition
 //
