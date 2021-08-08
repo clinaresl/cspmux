@@ -16,6 +16,13 @@ int main(int argc, char **argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
 
+    // Run specific tests only
+    // testing::GTEST_FLAG(filter) = "MultibitmapFixture.*";
+
+    // Exclude specific tests
+    // testing::GTEST_FLAG(filter) = "-BitmapFixture"; // The writing test is broken, so skip it
+
+    // and run the selection of tests
     return RUN_ALL_TESTS();
 }
 

@@ -23,7 +23,7 @@ None
 To compile the `cspmux` library you can use the following command:
 
 ```bash
-   $ cmake
+   $ cmake --build .
 ```
 
 `cmake`, will go through a number of tests and, if it does not find any error, it will automatically build the library.
@@ -53,7 +53,7 @@ Be aware that it might be necessary to prepend both `make install` and `make uni
 Finally, to entirely remove the intermediate files from the installation directory type:
 
 ```bash
-   $ make distclean
+   $ cmake --build . --target=clean
 ```   
 
 
@@ -62,14 +62,15 @@ Finally, to entirely remove the intermediate files from the installation directo
 The unit tests have been defined using Google Test. To compile all test cases and run the tests, type:
 
 ```bash
-   $ make check
+   $ cd tests/
+   $ cmake --build .
 ```    
 
-from the root directory where the library has been installed. In case all tests are enabled, a failure might be reported for all those unit tests that require accessing files below the directory `tests`. To make sure the tests are performed correctly it is strongly adviced to execute the following commands:
+from the root directory where the library has been installed. To run the tests:
 
 ```bash
    $ cd tests
-   $ ./gtest --gtest_also_run_disabled_tests
+   $ ./gtest
 ```    
 
 # Documentation #
