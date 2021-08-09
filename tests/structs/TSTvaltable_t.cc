@@ -1,0 +1,133 @@
+// -*- coding: utf-8 -*-
+// TSTvaltable_t.cc
+// -----------------------------------------------------------------------------
+//
+// Started on <lun 09-08-2021 21:26:31.191145832 (1628537191)>
+// Carlos Linares López <carlos.linares@uc3m.es>
+//
+
+//
+// Description
+//
+
+#include "../TSThelpers.h"
+#include "../fixtures/TSTvaltable_t.h"
+
+// Checks the creation of a table of values generates an empty table. By
+// default, the type of values is int
+// ----------------------------------------------------------------------------
+TEST_F (ValtableFixture, EmptyValtable) {
+
+    for (auto i = 0 ; i < NB_TESTS ; i++) {
+
+        // create an empty table of values, i.e., with no values at all
+        valtable_t<int> valtable;
+
+        // and verify it consists of precisely 0 elements
+        ASSERT_EQ (valtable.size (), 0);
+    }
+}
+
+// Checks the insertion and extraction of tables of int values
+// ----------------------------------------------------------------------------
+TEST_F(ValtableFixture, IntValues) {
+
+    for (auto i = 0 ; i < NB_TESTS/1000 ; i++) {
+
+        // create an empty table of values
+        valtable_t<int> valtable;
+
+        // now, randomly generate a random number of values
+        auto items = randVectorInt (rand () % MAX_LENGTH/1000, MAX_LENGTH/1000);
+
+        // insert all items in the table and verify that the value returned is
+        // the last index
+        for (auto j = 0 ; j < items.size () ; j++) {
+
+            ASSERT_EQ (valtable.insert(items[j]), j);
+        }
+
+        // now, retrieve all values from the table of values and verify they've
+        // are correct
+        for (auto j = 0 ; j < items.size () ; j++) {
+
+            ASSERT_EQ (valtable.get (j).get_value (), items[j]);
+        }
+
+        // Last check before leaving, make sure the size of the table is correct
+        // as well
+        ASSERT_EQ (valtable.size (), items.size ());
+    }
+}
+
+// Checks the insertion and extraction of tables of string values
+// ----------------------------------------------------------------------------
+TEST_F(ValtableFixture, StringValues) {
+
+    for (auto i = 0 ; i < NB_TESTS/1000 ; i++) {
+
+        // create an empty table of values
+        valtable_t<string> valtable;
+
+        // now, randomly generate a random number of values
+        auto items = randVectorString (rand () % MAX_LENGTH/1000, MAX_LENGTH/1000);
+
+        // insert all items in the table and verify that the value returned is
+        // the last index
+        for (auto j = 0 ; j < items.size () ; j++) {
+
+            ASSERT_EQ (valtable.insert(items[j]), j);
+        }
+
+        // now, retrieve all values from the table of values and verify they've
+        // are correct
+        for (auto j = 0 ; j < items.size () ; j++) {
+
+            ASSERT_EQ (valtable.get (j).get_value (), items[j]);
+        }
+
+        // Last check before leaving, make sure the size of the table is correct
+        // as well
+        ASSERT_EQ (valtable.size (), items.size ());
+    }
+}
+
+// Checks the insertion and extraction of tables of time values ---which are
+// essentially ints 
+// ----------------------------------------------------------------------------
+TEST_F(ValtableFixture, TimeValues) {
+
+    for (auto i = 0 ; i < NB_TESTS/1000 ; i++) {
+
+        // create an empty table of values
+        valtable_t<time_t> valtable;
+
+        // now, randomly generate a random number of values
+        auto items = randVectorTime (rand () % MAX_LENGTH/1000,
+                                     time (nullptr));
+
+        // insert all items in the table and verify that the value returned is
+        // the last index
+        for (auto j = 0 ; j < items.size () ; j++) {
+
+            ASSERT_EQ (valtable.insert(items[j]), j);
+        }
+
+        // now, retrieve all values from the table of values and verify they've
+        // are correct
+        for (auto j = 0 ; j < items.size () ; j++) {
+
+            ASSERT_EQ (valtable.get (j).get_value (), items[j]);
+        }
+
+        // Last check before leaving, make sure the size of the table is correct
+        // as well
+        ASSERT_EQ (valtable.size (), items.size ());
+    }
+}
+
+
+// Local Variables:
+// mode:cpp
+// fill-column:80
+// End:

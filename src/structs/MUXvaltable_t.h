@@ -31,13 +31,13 @@ class valtable_t {
         // INVARIANT: a table of values consists of a vector of them so that the
         // index of each value is indeed its location, so that if the index of a
         // value is known, then it can be retrieved in O (1)
-        vector<value_t<T>&> _table;
+        vector<value_t<T>> _table;
 
     public:
 
         // Default constructor - tables can be created only by default
         valtable_t () :
-            _table { vector<value_t<T>&>() }
+            _table { vector<value_t<T>>() }
         {}
 
         // tables of values can not be copied
