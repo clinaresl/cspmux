@@ -14,7 +14,6 @@
 
 #include<vector>
 
-// constants
 using namespace std;
 
 //
