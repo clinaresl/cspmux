@@ -8,7 +8,7 @@
 
 //
 // Description
-//
+// Unit tests of tables of MUX values
 
 #ifndef _TSTVALTABLE_T_H_
 #define _TSTVALTABLE_T_H_

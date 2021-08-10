@@ -21,6 +21,10 @@ const int NB_TESTS = 10000;
 // Maximum length of the bitmaps: 8 Gbytes
 const size_t MAX_LENGTH = 64000000000;
 
+// Maximun number of CSP variables and values for each variable
+const size_t NB_VARIABLES = 10000;
+const size_t NB_VALUES = 100;
+
 #endif // _TSTDEFS_H_
 
 // Local Variables:

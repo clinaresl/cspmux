@@ -153,6 +153,11 @@ class vartable_t {
         // returns the new number of plausible values of this entry
         const size_t increment_nbvalues (const size_t i);
 
+        // set the number of plausible values of the i-th variable to the
+        // specified value. It returns the new number of plausible values of
+        // this entry
+        const size_t set_nbvalues (const size_t i, const size_t value);
+
         // capacity
 
         // return the number of entries in this table

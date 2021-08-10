@@ -18,6 +18,7 @@
 #include<ctime>
 #include<set>
 #include<string>
+#include<utility>
 #include<vector>
 
 using namespace std;
@@ -41,6 +42,12 @@ vector<string> randVectorString (int n, int m, int l=10);
 // return a vector with n times randomly generated in the interval [0, m), where
 // m is measured as the number of seconds elapsed since epoch
 vector<time_t> randVectorTime (int n, long long int m);
+
+// return a vector of n pairs of ints: the first element is randomly chosen in
+// the interval [0, m), and the second is randomly chosen in the interval [m,
+// m+delta) or [m-delta, m) depending on whether delta is either positive or
+// negative
+vector<pair<int, int>> randVectorIntPair (int n, int m, int delta);
 
 
 #endif // _TSTHELPERS_H_

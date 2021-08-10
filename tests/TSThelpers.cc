@@ -116,6 +116,41 @@ vector<time_t> randVectorTime (int n, long long int m) {
     return result;
 }
 
+// return a vector of n pairs of ints: the first element is randomly chosen in
+// the interval [0, m), and the second is randomly chosen in the interval [m,
+// m+delta) or [m-delta, m) depending on whether delta is either positive or
+// negative
+vector<pair<int, int>> randVectorIntPair (int n, int m, int delta) {
+
+    // create an empty vector
+    vector<pair<int,int>> result;
+
+    // generate n random pairs of ints
+    for (auto i = 0 ; i < n ; i++) {
+
+        // generate the first random number
+        int item1 = rand () % m;
+
+        // and now generate the second one. Note that if delta is zero then the
+        // second number is necessarily equal to the first one
+        int item2;
+        if (delta > 0) {
+            item2 = item1 + rand () % delta;
+        } else if (delta < 0) {
+            item2 = item1 - rand () % (-delta);
+        } else {
+            item2 = item1;
+        }
+
+        // and insert it into the vector
+        result.push_back (pair<int, int>{item1, item2});
+    }
+
+    // and return the vector
+    return result;
+}
+
+
 
 // Local Variables:
 // mode:cpp

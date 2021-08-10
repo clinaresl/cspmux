@@ -125,7 +125,22 @@ const size_t vartable_t::increment_nbvalues (const size_t i) {
     return _table[i].get_nbvalues ();
 }
 
+// set the number of plausible values of the i-th variable to the specified
+// value. It returns the new number of plausible values of this entry
+const size_t vartable_t::set_nbvalues (const size_t i, const size_t value) {
 
+    // first, make sure the index requested is within the size of this table
+    if (i < 0 || i >= (int) _table.size ()) {
+        throw out_of_range ("[vartable_t::increment_nbvalues] out of bounds");
+    }
+
+    // in case it is a correct index, then set the number of plausible values.
+    // Note that no verification is performed!
+    _table[i] = value;
+
+    // and return the new number of plausible values
+    return _table[i].get_nbvalues ();
+}
 
 // Local Variables:
 // mode:cpp

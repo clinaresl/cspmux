@@ -8,10 +8,10 @@
 
 //
 // Description
-//
+// Unit tests of tables of MUX values
 
 #include "../TSThelpers.h"
-#include "../fixtures/TSTvaltable_t.h"
+#include "../fixtures/TSTvaltablefixture.h"
 
 // Checks the creation of a table of values generates an empty table. By
 // default, the type of values is int
