@@ -14,7 +14,9 @@
 #ifndef _MUXVARTABLE_T_H_
 #define _MUXVARTABLE_T_H_
 
+#include<map>
 #include<stdexcept>
+#include<string>
 #include<vector>
 
 #include "MUXvariable_t.h"
@@ -99,6 +101,12 @@ class vartable_t {
         // (1)
         vector<_entry_t> _table;
 
+        // variables are identified by their name which has to be unique. The
+        // following map keeps information about all variables registered in
+        // this table. It associates each name with a location in the table
+        // where they are registered
+        map<string, size_t> _indices;
+
     public:
 
         // Tables of CSP variables are built using the default constructor
@@ -130,16 +138,18 @@ class vartable_t {
         // has been assigned yet then -1 is returned
         long int get_value (const size_t i) const;
 
+        // variables are indexed by their name. The following operator returns
+        // the index of any variable registered in the table. In case
+        // it does not exist, an exception is thrown
+        const size_t operator[] (const string& name) const;
+
         // modifiers
 
         // add a new entry to the table of variables and return its index. The
         // only necessary information is the variable itself and the first and
         // last indices to the values of its domain
         size_t add_entry (const variable_t& variable,
-                          const size_t first, const size_t last) {
-            _table.push_back (_entry_t (variable, first, last));
-            return _table.size () - 1;
-        }
+                          const size_t first, const size_t last);
 
         // assign the index of one value in the domain of the i-th variable to
         // it

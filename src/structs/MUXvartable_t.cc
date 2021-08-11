@@ -78,6 +78,54 @@ long int vartable_t::get_value (const size_t i) const {
     return _table[i].get_value ();
 }
 
+// variables are indexed by their name. The following operator returns
+// the index of any variable registered in the table. In case
+// it does not exist, an exception is thrown
+const size_t vartable_t::operator[] (const string& name) const {
+
+    // this operation performs in O(log n) where n is the number of entries in
+    // the table
+    auto it = _indices.find (name);
+
+    // in case no variable is registered with this name, raise an exception
+    if (it == _indices.end ()) {
+        throw runtime_error ("[vartable_t::operator[]] name not found");
+    }
+
+    // otherwise, return its location
+    return it->second;
+}
+
+// add a new entry to the table of variables and return its index. The
+// only necessary information is the variable itself and the first and
+// last indices to the values of its domain
+size_t vartable_t::add_entry (const variable_t& variable,
+                              const size_t first, const size_t last) {
+
+    // variables are identified by their name which has to be unique. Thus, make
+    // sure this variable does not exist in this table
+    size_t index = string::npos;
+    try {
+        index = (*this) [variable.get_name ()];
+    } catch (runtime_error e) {
+
+        // if operator[] raised an exception, then this key does not exist and
+        // it is safe to proceed
+        _table.push_back (_entry_t (variable, first, last));
+
+        // and now add it to the map of names
+        _indices[variable.get_name ()] = _table.size () - 1;
+    }
+
+    // now, in case this variable already exists, immediately raise an exception
+    if (index != string::npos) {
+        throw runtime_error ("[vartable_t::add_entry] Duplicated variable");
+    }
+
+    // otherwise, return the location where this variable was stored
+    return _table.size () - 1;
+}
+
 // assign the index of one value in the domain of the i-th variable to
 // it
 void vartable_t::assign (const size_t i, const long int value) {
