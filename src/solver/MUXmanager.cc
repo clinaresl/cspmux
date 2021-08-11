@@ -1,17 +1,17 @@
 // -*- coding: utf-8 -*-
-// MUXvariable_t.cc
+// MUXmanager.cc
 // -----------------------------------------------------------------------------
 //
-// Started on <lun 09-08-2021 16:00:32.751526734 (1628517632)>
+// Started on <mar 10-08-2021 21:05:07.338196530 (1628622307)>
 // Carlos Linares López <carlos.linares@uc3m.es>
 //
 
 //
 // Description
-// Definition of a CSP variable
+// Base definition of a manager. Note that the manager is a template because in
+// can act on values defined over any type T
 
-#include "MUXvariable_t.h"
-
+#include "MUXmanager.h"
 
 // Local Variables:
 // mode:cpp

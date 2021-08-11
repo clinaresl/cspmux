@@ -40,9 +40,6 @@ class valtable_t {
             _table { vector<value_t<T>>() }
         {}
 
-        // tables of values can not be copied
-        valtable_t (const valtable_t& right) = delete;
-
         // accessors
 
         // return the value associated to a particular index

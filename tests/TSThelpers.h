@@ -35,9 +35,8 @@ set<int> randSetInt (int n, int m);
 // return a vector with n numbers randomly generated in the interval [0, m)
 vector<int> randVectorInt (int n, int m);
 
-// return a vector with n strings randomly generated in the interval [0, m),
-// each with l chars
-vector<string> randVectorString (int n, int m, int l=10);
+// return a vector with n strings randomly generated each with m chars
+vector<string> randVectorString (int n, int m);
 
 // return a vector with n times randomly generated in the interval [0, m), where
 // m is measured as the number of seconds elapsed since epoch

@@ -70,7 +70,7 @@ TEST_F(ValtableFixture, StringValues) {
         valtable_t<string> valtable;
 
         // now, randomly generate a random number of values
-        auto items = randVectorString (rand () % MAX_LENGTH/1000, MAX_LENGTH/1000);
+        auto items = randVectorString (rand () % MAX_LENGTH/1000, 10);
 
         // insert all items in the table and verify that the value returned is
         // the last index

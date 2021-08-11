@@ -66,6 +66,53 @@ TEST_F (VartableFixture, InitVartable) {
     }
 }
 
+// Checks that looking up a variable in the vartable returns the right location
+// ----------------------------------------------------------------------------
+TEST_F (VartableFixture, LookupVartable) {
+
+    for (auto i = 0 ; i < NB_TESTS/100 ; i++) {
+
+        // create an empty table of CSP variables, i.e., with no values at all
+        vartable_t vartable;
+
+        // and now populate it with up to NB_VARIABLES and their domains
+        vector<string> names;
+        vector<pair<int, int>> indices;
+        populate (vartable, NB_VARIABLES, NB_VALUES, names, indices);
+
+        // randomly choose a location
+        int loc = rand () % names.size ();
+
+        // lookup the variable with the name at location loc and verify it
+        // returns the value loc ---this should work because variables are
+        // assigned indices sequentially and names contains the names of the
+        // variables added to the table in the same sequence they were added
+        ASSERT_EQ (vartable[names[loc]], loc);
+    }
+}
+
+// Checks that reinserting a second variable with an existing name automatically
+// raises an exception
+// ----------------------------------------------------------------------------
+TEST_F (VartableFixture, RepeatedVariableVartable) {
+
+    for (auto i = 0 ; i < NB_TESTS/100 ; i++) {
+
+        // create an empty table of CSP variables, i.e., with no values at all
+        vartable_t vartable;
+
+        // and now populate it with up to NB_VARIABLES and their domains
+        vector<string> names;
+        vector<pair<int, int>> indices;
+        populate (vartable, NB_VARIABLES, NB_VALUES, names, indices);
+
+        // randomly choose any name and try inserting a variable with that name.
+        // For this, the first and last indices are fake, do not mind
+        EXPECT_THROW (vartable.add_entry (names[rand ()%names.size ()], 0, 1),
+                      runtime_error);
+    }
+}
+
 // Checks that decrementing the number of plausible values works as expected
 // ----------------------------------------------------------------------------
 TEST_F (VartableFixture, DecrementVartable) {

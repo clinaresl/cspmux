@@ -26,6 +26,12 @@ class value_t {
 
     public:
 
+        // constraints are added as functions that take two variables as
+        // arguments and return a bool value representing whether a specific
+        // combination of values of those variables is feasible (true) or not
+        // (false)
+        typedef bool (constraintHandler) (T, T);
+
         // Default constructors are disabled
         value_t () = delete;
 

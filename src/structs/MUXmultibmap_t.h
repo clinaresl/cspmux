@@ -48,9 +48,6 @@ class multibmap_t {
             _status { vector<bool>(len, true) }
         {}
 
-        // The copy constructor is strictly forbidden
-        multibmap_t (const multibmap_t& right) = delete;
-
         // accessors
 
         // accessors to the status vector

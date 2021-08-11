@@ -74,9 +74,8 @@ vector<int> randVectorInt (int n, int m) {
     return result;
 }
 
-// return a vector with n strings randomly generated in the interval [0, m),
-// each with l chars
-vector<string> randVectorString (int n, int m, int l) {
+// return a vector with n strings randomly generated each with m chars
+vector<string> randVectorString (int n, int m) {
 
     // create an empty vector
     vector<string> result;
@@ -85,7 +84,7 @@ vector<string> randVectorString (int n, int m, int l) {
     for (auto i = 0 ; i < n ; i++) {
 
         // generate a new random string
-        string item = randString (l);
+        string item = randString (m);
 
         // and insert it into the vector
         result.push_back (item);

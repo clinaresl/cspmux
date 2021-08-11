@@ -114,9 +114,6 @@ class vartable_t {
             _table { vector<_entry_t>() }
         {}
 
-        // Tables of CSP variables can not be copied
-        vartable_t (const vartable_t& right) = delete;
-
         // accessors
 
         // return the variable in the i-th location of this table
