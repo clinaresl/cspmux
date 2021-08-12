@@ -94,6 +94,33 @@ TEST_F (MultibitmapFixture, MultibitmapsEnabled) {
     }
 }
 
+// Checks the status of all bitmaps can be independently set and retrieved
+// ----------------------------------------------------------------------------
+TEST_F (MultibitmapFixture, MultibitmapsStatus) {
+
+    for (auto i = 0 ; i < NB_TESTS ; i++) {
+
+        // create a bitmap with a random length where each bitmap has also a
+        // random length
+        size_t mbsize = random () % MAX_LENGTH/1000000;
+        size_t bsize = random () % MAX_LENGTH/1000000;
+        multibmap_t multibmap (mbsize, bsize);
+
+        // randomly decide the status of each entry of the multibitmap
+        vector<int> status = randVectorInt (mbsize, 2);
+
+        // and set the values in the muultibitmap
+        for (auto j = 0 ; j < mbsize ; j++) {
+            multibmap.set_status (j, status[j]);
+        }
+
+        // check that all entries have been properly set
+        for (auto j = 0 ; j < mbsize ; j++ ) {
+            ASSERT_EQ (multibmap.get_status (j), status[j]);
+        }
+    }
+}
+
 // Checks that all bitmaps are null upon creation
 // ----------------------------------------------------------------------------
 TEST_F (MultibitmapFixture, MultibitmapsNullBitmaps) {

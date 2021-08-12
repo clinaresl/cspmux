@@ -16,8 +16,6 @@
 
 #include "MUXbmap_t.h"
 
-// constants
-
 using namespace std;
 
 //
@@ -58,7 +56,7 @@ class multibmap_t {
             _status[i] = value;
         }
 
-        // accessors to entries of the multi bitmap
+        // accessors to entries of the multibitmap
 
         // get the i-th vector. This can be used to simulate 2-dimensional
         // access to the underlying bits

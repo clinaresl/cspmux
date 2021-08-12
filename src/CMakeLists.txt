@@ -1,5 +1,6 @@
 # Create a library called cspmux which includes its source files
 add_library (cspmux
+  structs/MUXmultivector_t.cc
   structs/MUXbmap_t.cc structs/MUXmultibmap_t.cc
   structs/MUXvalue_t.cc structs/MUXvaltable_t.cc
   structs/MUXvariable_t.cc structs/MUXvartable_t.cc

@@ -13,6 +13,8 @@
 #ifndef _TSTDEFS_H_
 #define _TSTDEFS_H_
 
+#include<stddef.h>
+
 using namespace std;
 
 // predefined number of executions of each unit test

@@ -5,6 +5,7 @@ add_executable(gtest gtest.cc
   TSThelpers.cc
   structs/TSTbmap_t.cc
   structs/TSTmultibmap_t.cc
+  structs/TSTmultivector_t.cc
   structs/TSTvaltable_t.cc
   structs/TSTvariable_t.cc
   structs/TSTvartable_t.cc
