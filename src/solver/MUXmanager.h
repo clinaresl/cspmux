@@ -17,7 +17,7 @@
 #include<string>
 #include<vector>
 
-#include "../structs/MUXmultibmap_t.h"
+#include "../structs/MUXmultivector_t.h"
 #include "../structs/MUXvaltable_t.h"
 #include "../structs/MUXvalue_t.h"
 #include "../structs/MUXvariable_t.h"
@@ -35,7 +35,9 @@ class manager {
     // INVARIANT: a manager keeps up-to-date information about variables and
     // values used in the definition of the CSP task
 
-    // The table of values indexes all values over all variables
+    // The table of values indexes all values over all variables and stores also
+    // the number of still applicable mutexes (i.e., values which have not been
+    // disabled yet)
     valtable_t<T> _valtable;
 
     // The table of variables keeps up-to-date information about variables:
@@ -46,9 +48,9 @@ class manager {
     vartable_t _vartable;
 
     // Information about mutexes and whether some values are enabled or not is
-    // stored in a multibitmap. Because multibitmaps can not be created by
+    // stored in a multivector. Because multivectors can not be created by
     // default, they are stored as a pointer
-    multibmap_t* _multibmap;
+    multivector_t* _multivector;
 
     public:
 
@@ -56,16 +58,16 @@ class manager {
         manager () :
             _valtable { valtable_t<T> () },
             _vartable { vartable_t () },
-            _multibmap { nullptr }
+            _multivector { nullptr }
         {}
 
         // Destructor
         virtual ~manager () {
 
-            // in case a multibitmap has been created, make sure to deallocate
+            // in case a multivector has been created, make sure to deallocate
             // the memory it was using
-            if (_multibmap) {
-                delete _multibmap;
+            if (_multivector) {
+                delete _multivector;
             }
         }
 
@@ -82,8 +84,8 @@ class manager {
         }
 
         // the following service is provided for testing purposes
-        const multibmap_t* get_multibmap () const {
-            return _multibmap;
+        const multivector_t* get_multivector () const {
+            return _multivector;
         }
 
         // Modifiers
@@ -98,7 +100,7 @@ class manager {
             // information on mutexes has not been created yet ---in other
             // words, to ensure that no add_constraint has been executed. If so,
             // it is forbidden to create new variables
-            if (_multibmap) {
+            if (_multivector) {
                 throw runtime_error ("[manager::add_variable] It is forbidden to add variables after adding constraints!");
             }
 
@@ -148,14 +150,13 @@ class manager {
                 throw invalid_argument ("[manager::add_constraint] Unregistered variable");
             }
 
-            // Next, in case the multibitmap storing all mutexes has not been
+            // Next, in case the multivector storing all mutexes has not been
             // created yet, do it now
-            if (!_multibmap) {
+            if (!_multivector) {
 
-                // the length and width of the multibitmap has to be strictly
-                // equal to the overall number of values registered in this
-                // manager
-                _multibmap = new multibmap_t (_valtable.size (), _valtable.size ());
+                // the length of the multivector has to be strictly equal to the
+                // overall number of values registered in this manager
+                _multivector = new multivector_t (_valtable.size ());
             }
 
             // Now comes the fun: for all combination of values (a, b) in the
@@ -171,11 +172,18 @@ class manager {
 
                     // if the constraint returns false, then a mutex has been
                     // found
-                    if (!(*func) (_valtable.get(i).get_value (),
-                                  _valtable.get(j).get_value ())) {
+                    if (!(*func) (_valtable.get_value(i).get_value (),
+                                  _valtable.get_value(j).get_value ())) {
 
-                        // set this mutex in the multibitmap
-                        _multibmap->set (i, j, true);
+                        // set this mutex in the multibitmap. In general,
+                        // mutexes are reflexive, but anyway, the constraint is
+                        // invoked with all orderings of the values, so that
+                        // there is no need to store the oppsite thus allowing
+                        // for further generality
+                        _multivector->set (i, j);
+
+                        // and update the number of mutexes of this entry
+                        _valtable.increment_nbvalues (i);
                     }
                 }
             }

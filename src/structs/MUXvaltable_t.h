@@ -28,41 +28,87 @@ class valtable_t {
 
     private:
 
-        // INVARIANT: a table of values consists of a vector of them so that the
-        // index of each value is indeed its location, so that if the index of a
-        // value is known, then it can be retrieved in O (1)
-        vector<value_t<T>> _table;
+        template<class U>
+        struct _entry_t {
+
+            // INVARIANT: each entry of the table of values stores the value,
+            // and the number of (enabled) mutexes it has with other values. A
+            // mutex if enabled, if the mutex is still enabled
+            value_t<U> _value;
+            size_t _nbvalues;
+
+            // Default constructors of entries are strictly forbidden
+            _entry_t<U> () = delete;
+
+        };
+
+        // INVARIANT: a table of values consists of a vector of entries. If the
+        // index of a value is known, then it can be retrieved in O (1)
+        vector<_entry_t<T>> _table;
 
     public:
 
         // Default constructor - tables can be created only by default
         valtable_t () :
-            _table { vector<value_t<T>>() }
+            _table { vector<_entry_t<T>>() }
         {}
 
         // accessors
 
-        // return the value associated to a particular index
-        const value_t<T>& get (const size_t i) const {
+        // return the number of mutex values associated to a particular index
+        const size_t get_nbvalues (const size_t i) const {
 
             // first, make sure the index requested is within the size of this
             // table
             if (i < 0 || i >= (int) _table.size ()) {
-                throw out_of_range ("[valtable_t::get] out of bounds");
+                throw out_of_range ("[valtable_t::get_nbvalues] out of bounds");
+            }
+
+            // in case it is a correct index, return the number of mutex values
+            // at that position
+            return _table[i]._nbvalues;
+        }
+
+        // return the value associated to a particular index
+        const value_t<T>& get_value (const size_t i) const {
+
+            // first, make sure the index requested is within the size of this
+            // table
+            if (i < 0 || i >= (int) _table.size ()) {
+                throw out_of_range ("[valtable_t::get_value] out of bounds");
             }
 
             // in case it is a correct index, return the value at that position
-            return _table[i];
+            return _table[i]._value;
         }
 
         // modifiers
 
         // insert a new value into this table. Note that its unique index
         // corresponds to the location it takes into the table. It returns the
-        // index given to this value
+        // index given to this value. The number of mutex values is initialized
+        // to zero
         size_t insert (const value_t<T>& value) {
-            _table.push_back (value);
+            _table.push_back (_entry_t<T> {value, 0});
             return _table.size() - 1;
+        }
+
+        // decrement the number of plausible mutexes of the i-th value. It
+        // returns the current number of plausible mutexes of this entry after
+        // the update
+        const size_t decrement_nbvalues (const size_t i) {
+            return --_table[i]._nbvalues;
+        }
+
+        // increment the number of plausible mutexes of the i-th value. It
+        // returns the current number of plausible mutexes of this entry after
+        // the update
+        const size_t increment_nbvalues (const size_t i) {
+            return ++_table[i]._nbvalues;
+        }
+
+        void set_nbvalues (const size_t i, const size_t nbvalues) {
+            _table[i]._nbvalues = nbvalues;
         }
 
         // capacity
