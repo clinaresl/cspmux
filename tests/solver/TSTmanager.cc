@@ -12,7 +12,7 @@
 
 #include "../fixtures/TSTmanagerfixture.h"
 
-// Checks the creation of a manager creates empty tables and bitmap
+// Checks the creation of a manager creates empty tables and multivector
 // ----------------------------------------------------------------------------
 TEST_F (ManagerFixture, EmptyManager) {
 
@@ -25,8 +25,8 @@ TEST_F (ManagerFixture, EmptyManager) {
         ASSERT_EQ (m.get_vartable ().size (), 0);
         ASSERT_EQ (m.get_valtable ().size (), 0);
 
-        // finally, make sure also that the multibitmap is empty
-        ASSERT_EQ (m.get_multibmap(), nullptr);
+        // finally, make sure also that the multivector is empty
+        ASSERT_EQ (m.get_multivector(), nullptr);
     }
 }
 
@@ -59,7 +59,7 @@ TEST_F (ManagerFixture, AddVariablesManager) {
 
                 // retrieve the value at the location pointed to by the current
                 // index
-                value_t<int> value = valtable.get (idx);
+                value_t<int> value = valtable.get_value (idx);
 
                 // and verify this is the expected value
                 ASSERT_EQ (value.get_value(), values[i][j].get_value ());
@@ -86,13 +86,13 @@ TEST_F (ManagerFixture, AddVariablesManager) {
             ASSERT_EQ (vartable.get_value (i), -1);
         }
 
-        // Before leaving this case, ensure that the multibitmap is still null
-        ASSERT_EQ (m.get_multibmap(), nullptr);
+        // Before leaving this case, ensure that the multivector is still null
+        ASSERT_EQ (m.get_multivector(), nullptr);
     }
 }
 
-// Checks that posting constraints on unregistered variables raises an exception
-// ----------------------------------------------------------------------------
+// // Checks that posting constraints on unregistered variables raises an exception
+// // ----------------------------------------------------------------------------
 TEST_F (ManagerFixture, UnregisteredVariablesManager) {
 
     for (auto i = 0 ; i < NB_TESTS/100 ; i++) {
@@ -127,8 +127,8 @@ TEST_F (ManagerFixture, UnregisteredVariablesManager) {
         }
 
         // Add now a dummy constraint (in the form of a lambda function) but
-        // invoke it over non-existing variables and verify the operation raises
-        // an exception
+        // invoke it over at least one non-existing variable and verify the
+        // operation raises an exception
         ASSERT_THROW(m.add_constraint([] (int val1, int val2) {
             return true;
         }, variable0, variable1),
@@ -173,8 +173,8 @@ TEST_F (ManagerFixture, InvokeConstraintIntManager) {
         },variable_t{names[variables[0]]}, variable_t{names[variables[1]]});
 
         // before making the important assertion, ensure also that after posting
-        // constraints, the multibitmap is not null anymore
-        ASSERT_NE (m.get_multibmap(), nullptr);
+        // constraints, the multivector is not null anymore
+        ASSERT_NE (m.get_multivector(), nullptr);
 
         // and that posting additional constraints automatically raises an
         // exception
@@ -231,7 +231,7 @@ TEST_F (ManagerFixture, MutexIntManager) {
 
         // access the manager multibitmap. It is guarantted to be non-null.
         // Indeed one unit test before this one already verified this
-        const multibmap_t* multibmap = m.get_multibmap();
+        const multivector_t* multivector = m.get_multivector();
 
         // get the index to the first and last value in the domain of each
         // variable
@@ -262,10 +262,14 @@ TEST_F (ManagerFixture, MutexIntManager) {
                 // quotient=6 is also acknowledged as in this case, no pair is
                 // mutex
                 if (quotient==6) {
-                    ASSERT_FALSE (multibmap->get (idx1, idx2));
+                    ASSERT_FALSE (multivector->find (idx1, idx2));
                 } else {
-                    ASSERT_EQ (multibmap->get (idx1, idx2),
-                               (num1 + num2) % quotient == 0);
+
+                    // multivectors store mutexes explicitly and thus, if idx2
+                    // is not a mutex of idx1 it is just not present in its
+                    // vector of mutexes
+                    ASSERT_TRUE ( ( multivector->find (idx1, idx2) && (num1 + num2) % quotient == 0 ) ||
+                                  (!multivector->find (idx1, idx2) && (num1 + num2) % quotient != 0));
                 }
             }
         }
@@ -309,8 +313,8 @@ TEST_F (ManagerFixture, InvokeConstraintStringManager) {
         },variable_t{names[variables[0]]}, variable_t{names[variables[1]]});
 
         // before making the important assertion, ensure also that after posting
-        // constraints, the multibitmap is not null anymore
-        ASSERT_NE (m.get_multibmap(), nullptr);
+        // constraints, the multivector is not null anymore
+        ASSERT_NE (m.get_multivector(), nullptr);
 
         // and that posting additional constraints automatically raises an
         // exception
@@ -359,7 +363,7 @@ TEST_F (ManagerFixture, MutexStringManager) {
 
         // access the manager multibitmap. It is guarantted to be non-null.
         // Indeed one unit test before this one already verified this
-        const multibmap_t* multibmap = m.get_multibmap();
+        const multivector_t* multivector = m.get_multivector();
 
         // get the index to the first and last value in the domain of each
         // variable
@@ -386,9 +390,10 @@ TEST_F (ManagerFixture, MutexStringManager) {
                 string str2 = values[variables[1]][idx2-bounds2.first].get_value ();
 
                 // and verify that only those cases where either argument
-                // contains the letter 'r' is recognized as a mutex
-                ASSERT_EQ (multibmap->get (idx1, idx2),
-                           str1.find ('r') || str2.find ('r'));
+                // contains the letter 'r' is recognized as a mutex. Note that
+                // multivectors store mutexes explicitly
+                ASSERT_TRUE ( (multivector->find (idx1, idx2) && (str1.find ('r') || str2.find ('r'))) ||
+                              (!multivector->find (idx1, idx2) && !str1.find ('r') && !str2.find ('r') ));
             }
         }
     }
@@ -431,8 +436,8 @@ TEST_F (ManagerFixture, InvokeConstraintTimeManager) {
         },variable_t{names[variables[0]]}, variable_t{names[variables[1]]});
 
         // before making the important assertion, ensure also that after posting
-        // constraints, the multibitmap is not null anymore
-        ASSERT_NE (m.get_multibmap(), nullptr);
+        // constraints, the multivector is not null anymore
+        ASSERT_NE (m.get_multivector(), nullptr);
 
         // and that posting additional constraints automatically raises an
         // exception
@@ -487,7 +492,7 @@ TEST_F (ManagerFixture, MutexTimeManager) {
 
         // access the manager multibitmap. It is guarantted to be non-null.
         // Indeed one unit test before this one already verified this
-        const multibmap_t* multibmap = m.get_multibmap();
+        const multivector_t* multivector = m.get_multivector();
 
         // get the index to the first and last value in the domain of each
         // variable
@@ -518,10 +523,10 @@ TEST_F (ManagerFixture, MutexTimeManager) {
                 // quotient=6 is also acknowledged as in this case, no pair is
                 // mutex
                 if (quotient==6) {
-                    ASSERT_FALSE (multibmap->get (idx1, idx2));
+                    ASSERT_FALSE (multivector->find (idx1, idx2));
                 } else {
-                    ASSERT_EQ (multibmap->get (idx1, idx2),
-                               (num1 + num2) % quotient == 0);
+                    ASSERT_TRUE ( ( multivector->find (idx1, idx2) && (num1 + num2) % quotient == 0 ) ||
+                                  (!multivector->find (idx1, idx2) && (num1 + num2) % quotient != 0));
                 }
             }
         }

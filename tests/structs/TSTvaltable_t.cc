@@ -28,6 +28,47 @@ TEST_F (ValtableFixture, EmptyValtable) {
     }
 }
 
+// Checks that updating the number of values of each entry of the table of
+// values correctly works
+// ----------------------------------------------------------------------------
+TEST_F (ValtableFixture, NbValuesValtable) {
+
+    for (auto i = 0 ; i < NB_TESTS/1000 ; i++) {
+
+        // create an empty table of values, i.e., with no values at all
+        valtable_t<int> valtable;
+
+        // now, randomly generate a random number of values
+        auto items = randVectorInt (rand () % MAX_LENGTH/1000, MAX_LENGTH/1000);
+
+        // insert all items in the table and verify that the value returned is
+        // the last index
+        for (auto j = 0 ; j < items.size () ; j++) {
+
+            ASSERT_EQ (valtable.insert(items[j]), j);
+        }
+
+        // In passing verify that the size of the table of values is the
+        // expected one
+        ASSERT_EQ (valtable.size (), items.size ());
+
+        // now, randomly choose the number of values of each value of the table.
+        // Note that values have to be written prior to set their number of
+        // values
+        vector<int> nbvalues = randVectorInt (valtable.size (), MAX_LENGTH/1000);
+
+        // and set all these numbers of values
+        for (auto j = 0 ; j < valtable.size () ; j++) {
+            valtable.set_nbvalues(j, nbvalues[j]);
+        }
+
+        // and finally check that these numbers have been properly stored
+        for (auto j = 0 ; j < items.size (); j++) {
+            ASSERT_EQ (valtable.get_nbvalues (j), nbvalues[j]);
+        }
+    }
+}
+
 // Checks the insertion and extraction of tables of int values
 // ----------------------------------------------------------------------------
 TEST_F(ValtableFixture, IntValues) {
@@ -51,7 +92,7 @@ TEST_F(ValtableFixture, IntValues) {
         // are correct
         for (auto j = 0 ; j < items.size () ; j++) {
 
-            ASSERT_EQ (valtable.get (j).get_value (), items[j]);
+            ASSERT_EQ (valtable.get_value (j).get_value (), items[j]);
         }
 
         // Last check before leaving, make sure the size of the table is correct
@@ -83,7 +124,7 @@ TEST_F(ValtableFixture, StringValues) {
         // are correct
         for (auto j = 0 ; j < items.size () ; j++) {
 
-            ASSERT_EQ (valtable.get (j).get_value (), items[j]);
+            ASSERT_EQ (valtable.get_value (j).get_value (), items[j]);
         }
 
         // Last check before leaving, make sure the size of the table is correct
@@ -117,7 +158,7 @@ TEST_F(ValtableFixture, TimeValues) {
         // are correct
         for (auto j = 0 ; j < items.size () ; j++) {
 
-            ASSERT_EQ (valtable.get (j).get_value (), items[j]);
+            ASSERT_EQ (valtable.get_value (j).get_value (), items[j]);
         }
 
         // Last check before leaving, make sure the size of the table is correct

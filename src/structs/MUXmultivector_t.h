@@ -45,7 +45,7 @@ class multivector_t {
         // accessors
 
         // the following service is provided solely for testing purposes
-        bool find (const size_t i, const int value) {
+        bool find (const size_t i, const int value) const {
             return (std::find (_multivector[i].begin (),
                                _multivector[i].end (),
                                value) != _multivector[i].end ());
