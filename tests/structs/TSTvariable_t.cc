@@ -8,7 +8,7 @@
 
 //
 // Description
-//
+// Unit tests for testing MUX variables
 
 #include "../TSThelpers.h"
 #include "../fixtures/TSTvariablefixture.h"

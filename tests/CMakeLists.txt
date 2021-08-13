@@ -9,6 +9,9 @@ add_executable(gtest gtest.cc
   structs/TSTvaltable_t.cc
   structs/TSTvariable_t.cc
   structs/TSTvartable_t.cc
+  solver/TSTaction_t.cc
+  solver/TSTframe_t.cc
+  solver/TSTsstack_t.cc
   solver/TSTmanager.cc)
 
 target_link_libraries(gtest LINK_PUBLIC cspmux GTest::gtest GTest::gtest_main)

@@ -1,30 +1,27 @@
 // -*- coding: utf-8 -*-
-// TSTvariable_t.h
+// TSTactionfixture.h
 // -----------------------------------------------------------------------------
 //
-// Started on <mar 10-08-2021 00:07:19.061999940 (1628546839)>
+// Started on <vie 13-08-2021 15:17:25.789066957 (1628860645)>
 // Carlos Linares López <carlos.linares@uc3m.es>
 //
 
 //
 // Description
-// Unit tests for testing MUX variables
+// Unit tests for testing MUX solver actions
 
-#ifndef _TSTVARIABLE_T_H_
-#define _TSTVARIABLE_T_H_
-
-#include<cstdlib>
-#include<ctime>
+#ifndef _TSTACTIONFIXTURE_H_
+#define _TSTACTIONFIXTURE_H_
 
 #include "gtest/gtest.h"
 
 #include "../TSTdefs.h"
-#include "../../src/structs/MUXvariable_t.h"
+#include "../../src/solver/MUXaction_t.h"
 
 // Class definition
 //
-// Defines a Google test fixture for testing MUX bitmaps
-class VariableFixture : public ::testing::Test {
+// Defines a Google test fixture for testing MUX actions
+class ActionFixture : public ::testing::Test {
 
     protected:
 
@@ -37,7 +34,7 @@ class VariableFixture : public ::testing::Test {
 };
 
 
-#endif // _TSTVARIABLE_T_H_
+#endif // _TSTACTIONFIXTURE_H_
 
 // Local Variables:
 // mode:cpp

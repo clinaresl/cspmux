@@ -4,6 +4,9 @@ add_library (cspmux
   structs/MUXbmap_t.cc structs/MUXmultibmap_t.cc
   structs/MUXvalue_t.cc structs/MUXvaltable_t.cc
   structs/MUXvariable_t.cc structs/MUXvartable_t.cc
+  solver/MUXaction_t.cc
+  solver/MUXframe_t.cc
+  solver/MUXsstack_t.cc
   solver/MUXmanager.cc)
 
 # Make sure the compiler can find include files for the library when other
