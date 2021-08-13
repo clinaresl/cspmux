@@ -184,7 +184,7 @@ const size_t vartable_t::set_nbvalues (const size_t i, const size_t value) {
 
     // in case it is a correct index, then set the number of plausible values.
     // Note that no verification is performed!
-    _table[i] = value;
+    _table[i]._nbvalues = value;
 
     // and return the new number of plausible values
     return _table[i].get_nbvalues ();

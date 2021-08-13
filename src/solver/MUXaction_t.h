@@ -18,7 +18,7 @@
 // the following type is suitable for functions that perform actions during a
 // search. The first value is an index to a structure, the second value
 // represents the previous value and the third one stands for the new value.
-typedef void (stackHandler) (size_t, int, int);
+typedef void (stackHandler) (size_t, size_t, size_t);
 
 class action_t {
 
@@ -31,8 +31,8 @@ class action_t {
         // knowledge of the function stored in the frame
         stackHandler* _func;
         size_t _index;
-        int _prev;
-        int _next;
+        size_t _prev;
+        size_t _next;
 
     public:
 
@@ -40,7 +40,7 @@ class action_t {
         action_t () = delete;
 
         // Explicit constructor
-        action_t (stackHandler* func, size_t index, int prev, int next) :
+        action_t (stackHandler* func, size_t index, size_t prev, size_t next) :
             _func { func },
             _index {index },
             _prev { prev },

@@ -34,8 +34,8 @@ TEST_F (FrameFixture, PushFrame) {
 
             // all actions have the same lambda function which actually does
             // nothing and receives a null index and two random numbers
-            frame.push (action_t {[] (size_t index, int val1, int val2) {},
-                0, rand (), rand ()});
+            frame.push (action_t {[] (size_t index, size_t val1, size_t val2) {},
+                0, size_t(rand ()), size_t(rand ())});
         }
 
         // now, verify there are exactly as many actions in this frame as
@@ -68,10 +68,10 @@ TEST_F (FrameFixture, ExecFrame) {
             // all actions have the same lambda function which inserts two
             // numbers (in reversed order) in a vector and receives the
             // arguments to insert ---note the index is uselss in this tests
-            frame.push (action_t {[] (size_t index, int val1, int val2) {
+            frame.push (action_t {[] (size_t index, size_t val1, size_t val2) {
                 frameContainer.push_back (val2);
                 frameContainer.push_back (val1);
-            }, 0, ints[j*2], ints[j*2+1]});
+            }, 0, size_t(ints[j*2]), size_t(ints[j*2+1])});
         }
 
         // in passing verify (again!) there are exactly as many actions in this

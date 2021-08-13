@@ -22,6 +22,7 @@
 #include "../structs/MUXvalue_t.h"
 #include "../structs/MUXvariable_t.h"
 #include "../structs/MUXvartable_t.h"
+#include "../solver/MUXsstack_t.h"
 
 using namespace std;
 
@@ -187,6 +188,57 @@ class manager {
                     }
                 }
             }
+        }
+
+        // Handlers
+
+        // The following handler restores the number of feasible values of one
+        // variable to the previous one. It receives the index to the variable
+        // to update, the previous number of feasible values and the new one. In
+        // case its current number of feasible values is not the last one, then
+        // an exception is immediately raised
+        void set_var_nbvalues (size_t i, size_t prev, size_t last) {
+
+            // check the current number of feasible values of this variable is
+            // the one assigned last
+            if (_vartable.get_nbvalues(i) != last) {
+                throw runtime_error ("[manager::handler_var_nbvalues] Inconsistency found!");
+            }
+
+            // and now update it
+            _vartable.set_nbvalues (i, prev);
+        }
+
+        // The following handler restores the value assigned to a variable to
+        // the previous one. It receives the index to the variable to update,
+        // its previous value and the new one. In case its current value is not
+        // the new one, then an exception is immediately raised
+        void set_var_value (size_t i, size_t prev, size_t last) {
+
+            // check the current value assigned to this variable is the one
+            // assigned last
+            if (_vartable.get_value(i) != last) {
+                throw runtime_error ("[manager::handler_var_value] Inconsistency found!");
+            }
+
+            // and now update it
+            _vartable.assign (i, prev);
+        }
+
+        // The following handler restores the status of one value to the
+        // previous one. It receives the index to the value to update, the
+        // previous status and the last one. In case its current status is not
+        // the last one, then an exception is immediately raised
+        void set_val_status (size_t i, size_t prev, size_t last) {
+
+            // check the current status of the specified value is the one
+            // assigned last
+            if (_multivector->get_status (i) != last) {
+                throw runtime_error ("[manager::handler_val_status] Inconsistency found!");
+            }
+
+            // and now update it
+            _multivector->set_status (i, prev);
         }
 };
 

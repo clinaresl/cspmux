@@ -28,10 +28,10 @@ TEST_F (ActionFixture, EmptyManager) {
         // create the action with a lambda function which adds its arguments to
         // the container. Note that the value of the previous and new element
         // are needless in this unit test and that the index is not used at all
-        action_t action { [] (size_t index, int val1, int val2) {
+        action_t action { [] (size_t index, size_t val1, size_t val2) {
             actionContainer.push_back (val1);
             actionContainer.push_back (val2);
-        }, 0, ints[0], ints[1]};
+        }, 0, size_t(ints[0]), size_t(ints[1])};
 
         // execute the action over an empty vector
         actionContainer.clear ();
