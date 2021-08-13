@@ -28,47 +28,6 @@ TEST_F (ValtableFixture, EmptyValtable) {
     }
 }
 
-// Checks that updating the number of values of each entry of the table of
-// values correctly works
-// ----------------------------------------------------------------------------
-TEST_F (ValtableFixture, NbValuesValtable) {
-
-    for (auto i = 0 ; i < NB_TESTS/1000 ; i++) {
-
-        // create an empty table of values, i.e., with no values at all
-        valtable_t<int> valtable;
-
-        // now, randomly generate a random number of values
-        auto items = randVectorInt (rand () % MAX_LENGTH/1000, MAX_LENGTH/1000);
-
-        // insert all items in the table and verify that the value returned is
-        // the last index
-        for (auto j = 0 ; j < items.size () ; j++) {
-
-            ASSERT_EQ (valtable.insert(items[j]), j);
-        }
-
-        // In passing verify that the size of the table of values is the
-        // expected one
-        ASSERT_EQ (valtable.size (), items.size ());
-
-        // now, randomly choose the number of values of each value of the table.
-        // Note that values have to be written prior to set their number of
-        // values
-        vector<int> nbvalues = randVectorInt (valtable.size (), MAX_LENGTH/1000);
-
-        // and set all these numbers of values
-        for (auto j = 0 ; j < valtable.size () ; j++) {
-            valtable.set_nbvalues(j, nbvalues[j]);
-        }
-
-        // and finally check that these numbers have been properly stored
-        for (auto j = 0 ; j < items.size (); j++) {
-            ASSERT_EQ (valtable.get_nbvalues (j), nbvalues[j]);
-        }
-    }
-}
-
 // Checks the insertion and extraction of tables of int values
 // ----------------------------------------------------------------------------
 TEST_F(ValtableFixture, IntValues) {
@@ -164,6 +123,147 @@ TEST_F(ValtableFixture, TimeValues) {
         // Last check before leaving, make sure the size of the table is correct
         // as well
         ASSERT_EQ (valtable.size (), items.size ());
+    }
+}
+
+// Checks that decrementing the number of values of each entry of the table of
+// values correctly works
+// ----------------------------------------------------------------------------
+TEST_F (ValtableFixture, DecrementNbValuesValtable) {
+
+    for (auto i = 0 ; i < NB_TESTS/1000 ; i++) {
+
+        // create an empty table of values, i.e., with no values at all
+        valtable_t<int> valtable;
+
+        // now, randomly generate a random number of values
+        auto items = randVectorInt (rand () % MAX_LENGTH/1000, MAX_LENGTH/1000);
+
+        // insert all items in the table and verify that the value returned is
+        // the last index. Note that values have to be inserted before updating
+        // the number of values
+        for (auto j = 0 ; j < items.size () ; j++) {
+
+            ASSERT_EQ (valtable.insert(items[j]), j);
+        }
+
+        // In passing verify that the size of the table of values is the
+        // expected one
+        ASSERT_EQ (valtable.size (), items.size ());
+
+        // now, randomly choose the number of values of each value of the table.
+        // Note that values have to be written prior to set their number of
+        // values
+        vector<int> nbvalues = randVectorInt (valtable.size (), MAX_LENGTH/1000);
+
+        // and set all these numbers of values
+        for (auto j = 0 ; j < valtable.size () ; j++) {
+            valtable.set_nbvalues(j, nbvalues[j]);
+        }
+
+        // and decrement them all
+        for (auto j = 0 ; j < valtable.size () ; j++) {
+            auto new_value = valtable.decrement_nbvalues(j);
+
+            // verify the number returned is correct
+            ASSERT_EQ (new_value, nbvalues[j]-1);
+        }
+
+        // and once again check them all in a row
+        for (auto j = 0 ; j < items.size (); j++) {
+            ASSERT_EQ (valtable.get_nbvalues (j), nbvalues[j]-1);
+        }
+    }
+}
+
+// Checks that incrementing the number of values of each entry of the table of
+// values correctly works
+// ----------------------------------------------------------------------------
+TEST_F (ValtableFixture, IncrementNbValuesValtable) {
+
+    for (auto i = 0 ; i < NB_TESTS/1000 ; i++) {
+
+        // create an empty table of values, i.e., with no values at all
+        valtable_t<int> valtable;
+
+        // now, randomly generate a random number of values
+        auto items = randVectorInt (rand () % MAX_LENGTH/1000, MAX_LENGTH/1000);
+
+        // insert all items in the table and verify that the value returned is
+        // the last index. Note that values have to be inserted before updating
+        // the number of values
+        for (auto j = 0 ; j < items.size () ; j++) {
+
+            ASSERT_EQ (valtable.insert(items[j]), j);
+        }
+
+        // In passing verify that the size of the table of values is the
+        // expected one
+        ASSERT_EQ (valtable.size (), items.size ());
+
+        // now, randomly choose the number of values of each value of the table.
+        // Note that values have to be written prior to set their number of
+        // values
+        vector<int> nbvalues = randVectorInt (valtable.size (), MAX_LENGTH/1000);
+
+        // and set all these numbers of values
+        for (auto j = 0 ; j < valtable.size () ; j++) {
+            valtable.set_nbvalues(j, nbvalues[j]);
+        }
+
+        // and increment them all
+        for (auto j = 0 ; j < valtable.size () ; j++) {
+            auto new_value = valtable.increment_nbvalues(j);
+
+            // verify the number returned is correct
+            ASSERT_EQ (new_value, nbvalues[j]+1);
+        }
+
+        // and once again check them all in a row
+        for (auto j = 0 ; j < items.size (); j++) {
+            ASSERT_EQ (valtable.get_nbvalues (j), nbvalues[j]+1);
+        }
+    }
+}
+
+// Checks that updating the number of values of each entry of the table of
+// values correctly works
+// ----------------------------------------------------------------------------
+TEST_F (ValtableFixture, SetNbValuesValtable) {
+
+    for (auto i = 0 ; i < NB_TESTS/1000 ; i++) {
+
+        // create an empty table of values, i.e., with no values at all
+        valtable_t<int> valtable;
+
+        // now, randomly generate a random number of values
+        auto items = randVectorInt (rand () % MAX_LENGTH/1000, MAX_LENGTH/1000);
+
+        // insert all items in the table and verify that the value returned is
+        // the last index
+        for (auto j = 0 ; j < items.size () ; j++) {
+
+            ASSERT_EQ (valtable.insert(items[j]), j);
+        }
+
+        // In passing verify that the size of the table of values is the
+        // expected one
+        ASSERT_EQ (valtable.size (), items.size ());
+
+        // now, randomly choose the number of values of each value of the table.
+        // Note that values have to be written prior to set their number of
+        // values
+        vector<int> nbvalues = randVectorInt (valtable.size (), MAX_LENGTH/1000);
+
+        // and set all these numbers of values
+        for (auto j = 0 ; j < valtable.size () ; j++) {
+            valtable.set_nbvalues(j, nbvalues[j]);
+        }
+
+        // and finally check that these numbers have been properly stored
+        for (auto j = 0 ; j < items.size (); j++) {
+            ASSERT_EQ (valtable.get_nbvalues (j), nbvalues[j]);
+        }
     }
 }
 
