@@ -138,6 +138,61 @@ TEST_F (ManagerFixture, UnregisteredVariablesManager) {
     }
 }
 
+int quotient;
+
+// Checks that conversion from values to variables is correct
+// ----------------------------------------------------------------------------
+TEST_F (ManagerFixture, ValToVarManager) {
+
+    for (auto i = 0 ; i < NB_TESTS/100 ; i++) {
+
+        // create an empty table of CSP variables, i.e., with no values at all
+        manager<int> m;
+
+        // randomly pick up information for the variables to insert
+        vector<string> names;
+        vector<vector<value_t<int>>> values;
+        randVarIntVals (NB_VARIABLES/10, names, values);
+
+        // now, insert all these variables
+        for (int i = 0 ; i < NB_VARIABLES/10 ; i++) {
+
+            // add the i-th variable along with its domain
+            m.add_variable (variable_t (names[i]), values[i]);
+        }
+
+        // Add now a constraint (in the form of a lambda function) which returns
+        // false if the sum of its arguments is divisible by a number between 1
+        // and 5 ---in case 1 is selected, all combinations are then mutex--- or
+        // a very large constant so that no number is selected as a mutex. Post
+        // this constraint over the first two variables
+        quotient = 1 + rand ()%6;
+        m.add_constraint([] (int val1, int val2) {
+            if (quotient == 6) {
+                return true;
+            }
+            return (val1 + val2) % quotient != 0;
+        }, variable_t{names[0]}, variable_t{names[1]});
+
+        // Whether the mutexes have been properly registered or not is the goal
+        // of another unit test. In this case, we are simply going to test that
+        // conversion from values to variables is correct. Randomly chose a
+        // variable and a value within its domain
+        size_t variable = rand () % names.size ();
+        size_t value = m.get_vartable ().get_first (variable) +
+            rand () % (1+m.get_vartable().get_last(variable) -
+                       m.get_vartable ().get_first (variable));
+
+        // now, check the variable this value belongs to is correct
+        ASSERT_EQ (m.val_to_var(value), variable);
+
+        // in passing, check also the bound cases
+        ASSERT_EQ (m.val_to_var (m.get_vartable ().get_first (variable)), variable);
+        ASSERT_EQ (m.val_to_var (m.get_vartable ().get_last (variable)), variable);
+
+    }
+}
+
 vector<pair<int, int>> parametersInt;
 
 // Checks that constraints are invoked using the right order of int values. In
@@ -188,8 +243,6 @@ TEST_F (ManagerFixture, InvokeConstraintIntManager) {
         ASSERT_EQ (parametersInt, cross_product<int> (variables[0], variables[1], values));
     }
 }
-
-int quotient;
 
 // Checks that constraints properly acknowledge mutexes and store them
 // accordingly in managers of integers

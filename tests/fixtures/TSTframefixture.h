@@ -23,7 +23,7 @@
 
 // Class definition
 //
-// Defines a Google test fixture for testing MUX bitmaps
+// Defines a Google test fixture for testing MUX frames
 class FrameFixture : public ::testing::Test {
 
     protected:

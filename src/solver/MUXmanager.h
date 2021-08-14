@@ -33,25 +33,60 @@ using namespace std;
 template<class T>
 class manager {
 
-    // INVARIANT: a manager keeps up-to-date information about variables and
-    // values used in the definition of the CSP task
+    private:
 
-    // The table of values indexes all values over all variables and stores also
-    // the number of still applicable mutexes (i.e., values which have not been
-    // disabled yet)
-    valtable_t<T> _valtable;
+        // INVARIANT: a manager keeps up-to-date information about variables and
+        // values used in the definition of the CSP task
 
-    // The table of variables keeps up-to-date information about variables:
-    // variables are indexed sequentially and for each one: the first and last
-    // index to values defined in their domain are stored, in addition to the
-    // remaining number of plausible values and also the index to the value
-    // assigned to each variable
-    vartable_t _vartable;
+        // The table of values indexes all values over all variables and stores also
+        // the number of still applicable mutexes (i.e., values which have not been
+        // disabled yet)
+        valtable_t<T> _valtable;
 
-    // Information about mutexes and whether some values are enabled or not is
-    // stored in a multivector. Because multivectors can not be created by
-    // default, they are stored as a pointer
-    multivector_t* _multivector;
+        // The table of variables keeps up-to-date information about variables:
+        // variables are indexed sequentially and for each one: the first and last
+        // index to values defined in their domain are stored, in addition to the
+        // remaining number of plausible values and also the index to the value
+        // assigned to each variable
+        vartable_t _vartable;
+
+        // Information about mutexes and whether some values are enabled or not is
+        // stored in a multivector. Because multivectors can not be created by
+        // default, they are stored as a pointer
+        multivector_t* _multivector;
+
+        // the following private function performs a binary search over the
+        // table of variables to determine the variable a specific value belongs
+        // to. 'value' is the index of the value to look for; lower and upper
+        // are the bounds of the scope of the binary search over the table of
+        // variables thus they are indices to variables
+        size_t _val_to_var (const size_t value, const size_t lower, const size_t upper) const {
+
+            // take the midpoint between the lower and upper bounds. 'mid' is
+            // the index to a variable.
+            size_t mid = (lower + upper) / 2;
+
+            // first, if the value we are currently looking for falls strictly
+            // below the mid point
+            if (value < _vartable.get_first(mid)) {
+
+                // then proceed recursively with the lower half excluding the
+                // mid point
+                return _val_to_var (value, lower, mid-1);
+            }
+
+            // if it is strictly above the mid point
+            if (value > _vartable.get_last(mid)) {
+
+                // then proceed recursively with the upper half excluding the
+                // mid point
+                return _val_to_var (value, mid+1, upper);
+            }
+
+            // the last case is that the value we are currently looking for is
+            // right in the mid point, so return it
+            return mid;
+        }
 
     public:
 
@@ -87,6 +122,21 @@ class manager {
         // the following service is provided for testing purposes
         const multivector_t* get_multivector () const {
             return _multivector;
+        }
+
+        // return the variable a specific value belongs to. If the given index
+        // exceeds the current number of values an exception is thrown
+        size_t val_to_var (const size_t value) const {
+
+            // first things first. If this index exceeds the table of values,
+            // immediately raise an exception
+            if (value < 0 || value >= _valtable.size ()) {
+                throw out_of_range ("[manager::val_to_var] Out of bounds");
+            }
+
+            // otherwise, simply perform a binary search over the table of
+            // variables
+            return _val_to_var (value, 0, _vartable.size ()-1);
         }
 
         // Modifiers
