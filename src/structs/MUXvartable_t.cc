@@ -179,7 +179,7 @@ const size_t vartable_t::set_nbvalues (const size_t i, const size_t value) {
 
     // first, make sure the index requested is within the size of this table
     if (i < 0 || i >= (int) _table.size ()) {
-        throw out_of_range ("[vartable_t::increment_nbvalues] out of bounds");
+        throw out_of_range ("[vartable_t::set_nbvalues] out of bounds");
     }
 
     // in case it is a correct index, then set the number of plausible values.

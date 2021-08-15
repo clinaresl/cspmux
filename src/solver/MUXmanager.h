@@ -252,7 +252,7 @@ class manager {
             // check the current number of feasible values of this variable is
             // the one assigned last
             if (_vartable.get_nbvalues(i) != last) {
-                throw runtime_error ("[manager::handler_var_nbvalues] Inconsistency found!");
+                throw runtime_error ("[manager::set_var_nbvalues] Inconsistency found!");
             }
 
             // and now update it
@@ -268,7 +268,7 @@ class manager {
             // check the current value assigned to this variable is the one
             // assigned last
             if (_vartable.get_value(i) != last) {
-                throw runtime_error ("[manager::handler_var_value] Inconsistency found!");
+                throw runtime_error ("[manager::set_var_value] Inconsistency found!");
             }
 
             // and now update it
@@ -284,11 +284,28 @@ class manager {
             // check the current status of the specified value is the one
             // assigned last
             if (_multivector->get_status (i) != last) {
-                throw runtime_error ("[manager::handler_val_status] Inconsistency found!");
+                throw runtime_error ("[manager::set_val_status] Inconsistency found!");
             }
 
             // and now update it
             _multivector->set_status (i, prev);
+        }
+
+        // The following handler restores the number of feasible mutexes of a
+        // specific value to the previous one. It receives the index to the
+        // value to update, the previous number of feasible mutexes, and the
+        // last one. In case its current number of feasible values is not the
+        // last one, then an exception is immediately raised
+        void set_val_nbvalues (size_t i, size_t prev, size_t last) {
+
+            // check the current number of feasible values is the one assigned
+            // last
+            if (_valtable.get_nbvalues (i) != last) {
+                throw runtime_error ("[manager::set_val_nbvalues] Inconsistency found!");
+            }
+
+            // and now update it
+            _valtable.set_nbvalues (i, prev);
         }
 };
 

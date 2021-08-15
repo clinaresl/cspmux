@@ -62,6 +62,9 @@ class multivector_t {
         // accessors to entries of the multibitmap
 
         // get the i-th vector
+        const vector<int>& get (const size_t i) const {
+            return _multivector[i];
+        }
         const vector<int>& operator[] (const size_t i) const {
             return _multivector[i];
         }

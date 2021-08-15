@@ -55,7 +55,8 @@ class valtable_t {
 
         // accessors
 
-        // return the number of mutex values associated to a particular index
+        // return the number of (feasible or enabled) mutex values associated to
+        // a particular index
         const size_t get_nbvalues (const size_t i) const {
 
             // first, make sure the index requested is within the size of this
