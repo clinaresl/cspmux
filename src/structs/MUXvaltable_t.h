@@ -13,6 +13,7 @@
 #ifndef _VALTABLE_T_H_
 #define _VALTABLE_T_H_
 
+#include<iostream>
 #include<stdexcept>
 #include<vector>
 
@@ -39,7 +40,6 @@ class valtable_t {
 
             // Default constructors of entries are strictly forbidden
             _entry_t<U> () = delete;
-
         };
 
         // INVARIANT: a table of values consists of a vector of entries. If the
@@ -81,6 +81,33 @@ class valtable_t {
 
             // in case it is a correct index, return the value at that position
             return _table[i]._value;
+        }
+
+        // return whether two tables of values are identical or not
+        bool operator==(const valtable_t<T>& right) const {
+
+            // if both tables have different sizes then they are different
+            if (_table.size () != right.size ()) {
+                return false;
+            }
+
+            // verify now each entry independently
+            for (auto i = 0 ; i < _table.size () ; i++) {
+                if (_table[i]._value != right.get_value (i) ||
+                    _table[i]._nbvalues != right.get_nbvalues (i)) {
+                    return false;
+                }
+            }
+
+            // at this point both tables have been verified to be identical
+            return true;
+        }
+
+        // likewise, determine whether two tables of values are the same or not
+        bool operator!=(const valtable_t<T>& right) const {
+
+            cout << "Oh! " << ((*this) == right) << " " << _table.size () << endl; cout.flush ();
+            return !((*this) == right);
         }
 
         // modifiers

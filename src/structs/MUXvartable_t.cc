@@ -78,6 +78,37 @@ long int vartable_t::get_value (const size_t i) const {
     return _table[i].get_value ();
 }
 
+// return whether two tables of CSP variables are identical or not
+bool vartable_t::operator==(const vartable_t& right) const{
+
+    // if both tables have different sizes then they are different
+    if (_table.size () != right.size ()) {
+        return false;
+    }
+
+    // verify each entry in the table separately
+    for (auto i = 0 ; i < _table.size () ; i++) {
+        if (_table[i].get_variable () != right.get_variable (i) ||
+            _table[i].get_first () != right.get_first (i) ||
+            _table[i].get_last () != right.get_last (i) ||
+            _table[i].get_nbvalues () != right.get_nbvalues (i)||
+            _table[i].get_value () != right.get_value (i)) {
+            return false;
+        }
+    }
+
+    // At this point, both tables have been verified to be identical. note the
+    // map of indices is NOT verified which means that all naming schemas are
+    // considered to be identical
+    return true;
+}
+
+// likewise, define whether they are different
+bool vartable_t::operator!=(const vartable_t& right) const {
+
+    return !((*this) == right);
+}
+
 // variables are indexed by their name. The following operator returns
 // the index of any variable registered in the table. In case
 // it does not exist, an exception is thrown

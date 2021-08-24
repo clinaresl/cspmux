@@ -93,6 +93,25 @@ class vartable_t {
                 _value = value;
                 return *this;
             }
+
+            // return whether two entries are the same or not
+            bool operator==(const _entry_t& right) const {
+                return _variable == right.get_variable () &&
+                    _first == right.get_first () &&
+                    _last == right.get_last () &&
+                    _nbvalues == right.get_nbvalues () &&
+                    _value == right.get_value ();
+            }
+
+            // Likewise, define whether they are different
+            bool operator!=(const _entry_t& right) const {
+                return _variable != right.get_variable () ||
+                    _first != right.get_first () ||
+                    _last != right.get_last () ||
+                    _nbvalues != right.get_nbvalues () ||
+                    _value != right.get_value ();
+            }
+
         };
 
         // INVARIANT: A table of variables consists then of a vector of entries.
@@ -134,6 +153,12 @@ class vartable_t {
         // return the index to the value assigned to the i-th variable. If none
         // has been assigned yet then -1 is returned
         long int get_value (const size_t i) const;
+
+        // return whether two tables of CSP variables are identical or not
+        bool operator==(const vartable_t& right) const;
+
+        // likewise, define whether they are different
+        bool operator!=(const vartable_t& right) const;
 
         // variables are indexed by their name. The following operator returns
         // the index of any variable registered in the table. In case

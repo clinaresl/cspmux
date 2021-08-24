@@ -44,6 +44,18 @@ class value_t {
         const T& get_value () const
         { return _value; }
 
+        // return whether two values defined over the same type are the same or
+        // not. This definition depends also upon the definition of equality for
+        // the type T
+        bool operator==(const value_t<T>& right) const {
+            return _value == right.get_value ();
+        }
+
+        // Likewise, define whether they are different
+        bool operator!=(const value_t<T>& right) const {
+            return !((*this) == right);
+        }
+
 };
 
 #endif // _VALUE_T_H_

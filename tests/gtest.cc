@@ -17,7 +17,7 @@ int main(int argc, char **argv)
     ::testing::InitGoogleTest(&argc, argv);
 
     // Run specific tests only
-    // testing::GTEST_FLAG(filter) = "ManagerFixture.UnwindFullAssignIntManager";
+    testing::GTEST_FLAG(filter) = "ManagerFixture.UnwindFullAssignIntManager";
 
     // Exclude specific tests
     // testing::GTEST_FLAG(filter) = "-BitmapFixture"; // The writing test is broken, so skip it

@@ -37,9 +37,10 @@ class ManagerFixture : public ::testing::Test {
             srand (time (nullptr));
         }
 
-        // return a randomly generated vector of strings and integers to
-        // populate the domain of each variable. The number of values generated
-        // is also randomly selected in the interval [0, MAX_LENGTH/1000)
+        // return a randomly generated vector of strings and integer values to
+        // populate the domain of n variables. For each variable, the number of
+        // values generated is randomly selected in the interval [10, NB_VALUES]
+        // and the integer values are randomly selected in the interval [0, MAX_LENGTH]
         void randVarIntVals (int n, vector<string>& name, vector<vector<value_t<int>>>& values) {
 
             // first, randomly select a name for a variable
@@ -48,7 +49,7 @@ class ManagerFixture : public ::testing::Test {
             // and now randomly select integer values for the domain of each
             // variable
             for (int i = 0 ; i < n ; i++) {
-                vector<int> raw_values = randVectorInt (1+rand ()% NB_VALUES, MAX_LENGTH/1000);
+                vector<int> raw_values = randVectorInt (10 + rand () % (NB_VALUES-9), MAX_LENGTH/1000);
 
                 // and now transform these values into MUX values
                 vector<value_t<int>> ivalues;

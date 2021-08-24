@@ -60,6 +60,17 @@ class variable_t {
         void set_description (string description) {
             _description = description;
         }
+
+        // two variables are the same if and only if they have strictly the same
+        // name (in spite of the description)
+        bool operator==(const variable_t& right) const {
+            return _name == right.get_name ();
+        }
+
+        // Likewise, define whether they are different
+        bool operator!=(const variable_t& right) const {
+            return _name != right.get_name ();
+        }
 };
 
 #endif // _MUXVARIABLE_T_H_

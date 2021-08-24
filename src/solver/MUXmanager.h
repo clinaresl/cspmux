@@ -110,17 +110,17 @@ class manager {
         // Accessors
 
         // the following service is provided for testing purposes
-        const valtable_t<T>& get_valtable () const {
+        valtable_t<T>& get_valtable () {
             return _valtable;
         }
 
         // the following service is provided for testing purposes
-        const vartable_t& get_vartable () const {
+        vartable_t& get_vartable () {
             return _vartable;
         }
 
         // the following service is provided for testing purposes
-        const multivector_t* get_multivector () const {
+        multivector_t* get_multivector () {
             return _multivector;
         }
 
@@ -184,7 +184,13 @@ class manager {
 
         // add_constraint invokes the function given in first place over all
         // values of the domains of the given variables. Every combination of
-        // values which makes the function to return false is stored as a mutex
+        // values which makes the function to return false is stored as a mutex.
+        //
+        // This solver assumes mutexes to be reflexive. Thus, it is strictly
+        // forbidden to invoke constraints over the same set of variables with
+        // different orderings, i.e., add_constraint (func, X1, X2) and
+        // add_constraint (func, X2, X1) are strictly equivalent and invoking
+        // both would cause unpredictable effects
         void add_constraint (typename value_t<T>::constraintHandler* func,
                              const variable_t& var1, const variable_t& var2) {
 
@@ -213,11 +219,11 @@ class manager {
             // Now comes the fun: for all combination of values (a, b) in the
             // domains of each CSP variable, a in var1, b in var2, invoke the
             // constraint
-            for (int i = _vartable.get_first(index1) ;
+            for (size_t i = _vartable.get_first(index1) ;
                  i <= _vartable.get_last(index1) ;
                  i++) {
 
-                for (int j = _vartable.get_first(index2) ;
+                for (size_t j = _vartable.get_first(index2) ;
                      j <= _vartable.get_last(index2) ;
                      j++) {
 
@@ -226,15 +232,18 @@ class manager {
                     if (!(*func) (_valtable.get_value(i).get_value (),
                                   _valtable.get_value(j).get_value ())) {
 
-                        // set this mutex in the multibitmap. In general,
-                        // mutexes are reflexive, but anyway, the constraint is
-                        // invoked with all orderings of the values, so that
-                        // there is no need to store the oppsite thus allowing
-                        // for further generality
+                        // set this mutex in the multibitmap. Note this solver
+                        // only allows mutexes which are reflexive
                         _multivector->set (i, j);
+                        _multivector->set (j, i);
 
-                        // and update the number of mutexes of this entry
+                        // and update the number of mutexes of these entries
+                        //
+                        // WARNING! adding constraints over the same set of
+                        // variables with different orderings would cause
+                        // unpredictable effects!
                         _valtable.increment_nbvalues (i);
+                        _valtable.increment_nbvalues (j);
                     }
                 }
             }
