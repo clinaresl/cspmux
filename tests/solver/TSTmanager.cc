@@ -981,6 +981,9 @@ manager<int> mFullAssignment;
 void handler_var_value_fullassignment (size_t index, size_t val1, size_t val2) {
     mFullAssignment.set_var_value (index, val1, val2);
 }
+void handler_var_domain_fullassignment (size_t index, size_t val1, size_t val2) {
+    mFullAssignment.set_var_nbvalues (index, val1, val2);
+}
 void handler_val_status_fullassignment (size_t index, size_t val1, size_t val2) {
     mFullAssignment.set_val_status (index, val1, val2);
 }
@@ -1057,10 +1060,9 @@ TEST_F (ManagerFixture, UnwindFullAssignIntManager) {
             last};
         frame.push (assign_action);
 
-        // Update the value of this variable. For this, use the handler defined
-        // above but reversing the arguments, and verify the table of variables
-        // has been properly updated
-        handler_var_value_fullassignment (variable, last, prev);
+        // Update the value of this variable and verify that it was properly
+        // recorded
+        mFullAssignment.get_vartable ().assign (variable, last);
         ASSERT_EQ (mFullAssignment.get_vartable ().get_value (variable), last);
 
         // STATUS[MUTEX] <- FALSE
@@ -1099,15 +1101,38 @@ TEST_F (ManagerFixture, UnwindFullAssignIntManager) {
             };
             frame.push (status_action);
 
-            // to update the status invoke the handler defined above but
-            // reversing the order, i.e., indicating the previous value is false
-            // and the new one is true ---while the previous value is true and
-            // the new one is false
-            handler_val_status_fullassignment (size_t (mvalue), false, true);
-
-            // and disable this entry
-            multivector->set_status (mvalue, false);
+            // and disable this entry and verify that its new status was
+            // properly saved
+            mFullAssignment.get_multivector()->set_status(mvalue, false);
             ASSERT_FALSE (multivector->get_status (mvalue));
+
+            // NUMBER OF LEGAL VALUES IN EACH DOMAIN
+            // ----------------------------------------------------------------
+
+            // next, update the number of legal values in the domain of the
+            // variable this value belongs to
+            size_t mvariable = mFullAssignment.val_to_var(mvalue);
+
+            // first, create an action to restore the number of legal values in
+            // the domain of this variable and push it onto the frame
+            action_t domain_action{handler_var_domain_fullassignment,
+                mvariable,
+                mFullAssignment.get_vartable().get_nbvalues(mvariable),
+                mFullAssignment.get_vartable().get_nbvalues(mvariable)-1
+            };
+            frame.push (domain_action);
+
+            // now, effectively decrement the number of legal values in the
+            // domain of this variable and, in passing, verify there is at least
+            // one!!
+            size_t domain_length = mFullAssignment.get_vartable ().get_nbvalues (mvariable);
+            ASSERT_GE (mFullAssignment.get_vartable ().get_nbvalues (mvariable), 1);
+            mFullAssignment.get_vartable ().decrement_nbvalues(mvariable);
+            ASSERT_EQ (mFullAssignment.get_vartable ().get_nbvalues (mvariable),
+                       domain_length-1);
+
+            // NUMBER OF ENABLED MUTEXES
+            // ----------------------------------------------------------------
 
             // in addition, update the number of enabled mutexes of those values
             // which are mutex with this one
@@ -1145,16 +1170,26 @@ TEST_F (ManagerFixture, UnwindFullAssignIntManager) {
         //    1 assign action: assigns a value randomly chosen to a variable
         //                     randomly selected, +
         //
-        //    nbvalues (number of enabled mutexes): number of values that have
-        //                                          been disabled because they
-        //                                          are mutex with the value
-        //                                          assigned, +
+        //    multivector->get (last).size: or the number of mutexes of the
+        //                                  value assigned to the variable
+        //                                  randomly selected which is strictly
+        //                                  equal to the number of values that
+        //                                  have been disabled because they are
+        //                                  indeed mutex with the value
+        //                                  assigned, +
+        //
+        //    multivector->get (last).size: or the number of mutexes of the
+        //                                  value assigned to the variable
+        //                                  randomly selected which is strictly
+        //                                  equal to the number of updates of
+        //                                  the legal number of values in the
+        //                                  domain of a variable, +
         //
         //    nbvalues_updated (the number of values whose enabled mutexes has
         //    been updated): values that have updated the number of enabled
         //    mutexes. If a value is disabled then those mutex with it are not
         //    threaten anymore
-        ASSERT_EQ (frame.size (), 1+multivector->get(last).size ()+nbvalues_updated);
+        ASSERT_EQ (frame.size (), 1+2*multivector->get(last).size ()+nbvalues_updated);
 
         // before undoing changes, ensure that the main structs of the solver
         // have indeed being modified
@@ -1173,10 +1208,17 @@ TEST_F (ManagerFixture, UnwindFullAssignIntManager) {
         ASSERT_EQ (mFullAssignment.get_vartable ().get_value (variable), prev);
 
         // and now verify that all mutexes of the randomly selected value are
-        // enabled again
+        // enabled again along with other information
         for (auto mvalue : multivector->get(last)) {
 
+            // first, ensure that the status of all values that were mutex has
+            // been restored
             ASSERT_TRUE (multivector->get_status (mvalue));
+
+            // next, verify also that the number of legal values in the domain
+            // of the affected variable has been restored as well
+            ASSERT_EQ (mFullAssignment.get_vartable ().get_nbvalues(mFullAssignment.val_to_var(mvalue)),
+                vartableFullAssignment.get_nbvalues (mFullAssignment.val_to_var(mvalue)));
 
             // and now verify also that the number of enabled mutexes of those
             // values which are mutex with mvalue has been restored as well
