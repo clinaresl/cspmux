@@ -144,8 +144,8 @@ class manager {
         // add_variable posts a new variable and its domain to the CSP manager.
         // The domain has to be given as a vector of values. Importantly,
         // variables can not be added once constraints have been posted
-        void add_variable (const variable_t& variable,
-                           vector<value_t<T>> domain) {
+        void add_variable (variable_t& variable,
+                           vector<value_t<T>>& domain) {
 
             // Before moving further, it is mandatory to verify that the
             // information on mutexes has not been created yet ---in other
@@ -186,11 +186,15 @@ class manager {
         // values of the domains of the given variables. Every combination of
         // values which makes the function to return false is stored as a mutex.
         //
-        // This solver assumes mutexes to be reflexive. Thus, it is strictly
-        // forbidden to invoke constraints over the same set of variables with
-        // different orderings, i.e., add_constraint (func, X1, X2) and
-        // add_constraint (func, X2, X1) are strictly equivalent and invoking
-        // both would cause unpredictable effects
+        // It is strictly forbidden to invoke different constraints over the
+        // same set of variables, i.e., add_constraint (func1, X1, X2) and
+        // add_constraint (func2, X1, X2) might cause unexpected results
+        //
+        // Likewise, this solver assumes mutexes to be reflexive. Thus, it is
+        // strictly forbidden to invoke the same constraint over the same set of
+        // variables with different orderings, i.e., add_constraint (func, X1,
+        // X2) and add_constraint (func, X2, X1) are strictly equivalent and
+        // invoking both might cause unpredictable effects
         void add_constraint (typename value_t<T>::constraintHandler* func,
                              const variable_t& var1, const variable_t& var2) {
 
@@ -292,12 +296,12 @@ class manager {
 
             // check the current status of the specified value is the one
             // assigned last
-            if (_multivector->get_status (i) != last) {
+            if (_valtable.get_status (i) != last) {
                 throw runtime_error ("[manager::set_val_status] Inconsistency found!");
             }
 
             // and now update it
-            _multivector->set_status (i, prev);
+            _valtable.set_status (i, prev);
         }
 
         // The following handler restores the number of feasible mutexes of a

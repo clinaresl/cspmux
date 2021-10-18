@@ -25,14 +25,8 @@ class multibmap_t {
     private:
 
         // INVARIANT: A multimap consists of an array of bitmaps which are
-        // stored as a vector bitmaps, some of which might be anbled and others
-        // might be disabled
+        // stored as a vector bitmaps
         vector<bmap_t> _multibmap;
-
-        // note that the status of each entry is stored separately. True, these
-        // data could be stored in a bitmap but a vector<bool> will be much
-        // faster and memory usage will grow only slightly
-        vector<bool> _status;
 
     public:
 
@@ -42,21 +36,10 @@ class multibmap_t {
         // Explicit constructor - given the length of the array and the number
         // of bits in each entry, all of which are initially enabled
         multibmap_t (const size_t len, const size_t nbbits) :
-            _multibmap { vector<bmap_t>(len, bmap_t (nbbits)) },
-            _status { vector<bool>(len, true) }
+            _multibmap { vector<bmap_t>(len, bmap_t (nbbits)) }
         {}
 
         // accessors
-
-        // accessors to the status vector
-        bool get_status (const size_t i) const {
-            return _status[i];
-        }
-        void set_status (const size_t i, const bool value) {
-            _status[i] = value;
-        }
-
-        // accessors to entries of the multibitmap
 
         // get the i-th vector. This can be used to simulate 2-dimensional
         // access to the underlying bits

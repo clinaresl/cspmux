@@ -15,8 +15,6 @@
 
 #include<string>
 
-using namespace std;
-
 // Class definition
 //
 // Definition of a CSP variable
@@ -25,8 +23,8 @@ class variable_t {
     private:
 
         // A variable consists of a name and, optionally, a description
-        string _name;
-        string _description;
+        std::string _name;
+        std::string _description;
 
     public:
 
@@ -35,29 +33,33 @@ class variable_t {
 
         // Explicit constructors - at least the name has to be given and,
         // optionally, a description
-        variable_t (string name) :
-            _name { name },
-            _description { "" }
-        {}
-        variable_t (string name, string description) :
+        variable_t (std::string name, std::string description = "") :
             _name { name },
             _description { description }
         {}
 
+        // default copy and move constructors
+        variable_t (variable_t&) = default;
+        variable_t (variable_t&&) = default;
+
+        // default copy and move assignments
+        variable_t& operator=(variable_t&) = default;
+        variable_t& operator=(variable_t&&) = default;
+
         // accessors
 
         // get the name of this variable
-        const string& get_name () const {
+        const std::string& get_name () const {
             return _name;
         }
 
         // get the description of this variable
-        const string& get_description () const {
+        const std::string& get_description () const {
             return _description;
         }
 
         // set the description of this variable
-        void set_description (string description) {
+        void set_description (std::string description) {
             _description = description;
         }
 

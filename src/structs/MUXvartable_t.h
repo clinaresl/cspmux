@@ -21,7 +21,7 @@
 
 #include "MUXvariable_t.h"
 
-using namespace std;
+// using namespace std;
 
 // Class definition
 //
@@ -35,102 +35,82 @@ class vartable_t {
             // INVARIANT: each entry of the table of variables stores the
             // variable, the first and last index to the values of its domain,
             // the number of plausible values in its domain (not deleted yet),
-            // and also the index to the value in its domain assigned to it
+            // and also the index to the value in its domain assigned to it,
+            // which takes the maximum value by default
             variable_t _variable;
             size_t _first, _last;
             size_t _nbvalues;
-            long int _value;
+            size_t _value;
 
             // Default constructors of entries are strictly forbidden
             _entry_t () = delete;
 
+            // default copy and move constructors
+            _entry_t (_entry_t&) = default;
+            _entry_t (_entry_t&&) = default;
+
+            // default copy and move assignments
+            _entry_t& operator=(_entry_t&) = default;
+            _entry_t& operator=(_entry_t&&) = default;
+
             // Explicit constructor - entries are built providing the variable,
             // and the first and last indices to the table of values of its
             // domain. Note that the value is initialized to an impossible
-            // location in the table of values, -1, and that the number of
-            // plausible values is initialized to the number of values in its
-            // domain.
-            _entry_t (const variable_t& variable,
+            // location in the table of values, the maximum size_t, and that the
+            // number of plausible values is initialized to the number of values
+            // in its domain.
+            _entry_t (variable_t& variable,
                       const size_t first, const size_t last) :
                 _variable { variable },
                 _first { first },
                 _last { last },
                 _nbvalues { 1 + last - first },
-                _value { -1 }
+                _value { std::string::npos }
             {}
 
-            // accessors
-            const variable_t& get_variable () const {
-                return _variable;
-            }
-            const size_t get_first () const {
-                return _first;
-            }
-            const size_t get_last () const {
-                return _last;
-            }
-            const size_t get_nbvalues () const {
-                return _nbvalues;
-            }
-            const long int get_value () const {
-                return _value;
-            }
-
-            // decrement the number of plausible values
-            _entry_t& operator-=(const int incr) {
-                _nbvalues -= incr;
-                return *this;
-            }
-
-            // increment the number of plausible values
-            _entry_t& operator+=(const int incr) {
-                _nbvalues += incr;
-                return *this;
-            }
-
             // set the value assigned to this CSP variable
-            _entry_t& operator=(const long int value) {
+            _entry_t& operator=(const size_t value) {
                 _value = value;
                 return *this;
             }
 
             // return whether two entries are the same or not
             bool operator==(const _entry_t& right) const {
-                return _variable == right.get_variable () &&
-                    _first == right.get_first () &&
-                    _last == right.get_last () &&
-                    _nbvalues == right.get_nbvalues () &&
-                    _value == right.get_value ();
+                return _variable == right._variable &&
+                    _first == right._first &&
+                    _last == right._last &&
+                    _nbvalues == right._nbvalues &&
+                    _value == right._value;
             }
 
             // Likewise, define whether they are different
             bool operator!=(const _entry_t& right) const {
-                return _variable != right.get_variable () ||
-                    _first != right.get_first () ||
-                    _last != right.get_last () ||
-                    _nbvalues != right.get_nbvalues () ||
-                    _value != right.get_value ();
+                return _variable != right._variable ||
+                    _first != right._first ||
+                    _last != right._last ||
+                    _nbvalues != right._nbvalues ||
+                    _value != right._value;
             }
 
         };
 
         // INVARIANT: A table of variables consists then of a vector of entries.
         // Note that each entry is located at the index of a variable, so that
-        // if the identifier of a variable is known, it can be retrieved in O
-        // (1)
-        vector<_entry_t> _table;
+        // if the identifier of a variable is known, it can be retrieved in O(1)
+        std::vector<_entry_t> _table;
 
         // variables are identified by their name which has to be unique. The
         // following map keeps information about all variables registered in
         // this table. It associates each name with a location in the table
         // where they are registered
-        map<string, size_t> _indices;
+        std::map<std::string, size_t> _indices;
 
     public:
 
         // Tables of CSP variables are built using the default constructor
         vartable_t () :
-            _table { vector<_entry_t>() }
+            _table { std::vector<_entry_t>() },
+            _indices { std::map<std::string, size_t>() }
         {}
 
         // accessors
@@ -152,7 +132,7 @@ class vartable_t {
 
         // return the index to the value assigned to the i-th variable. If none
         // has been assigned yet then -1 is returned
-        long int get_value (const size_t i) const;
+        const size_t get_value (const size_t i) const;
 
         // return whether two tables of CSP variables are identical or not
         bool operator==(const vartable_t& right) const;
@@ -163,32 +143,34 @@ class vartable_t {
         // variables are indexed by their name. The following operator returns
         // the index of any variable registered in the table. In case
         // it does not exist, an exception is thrown
-        const size_t operator[] (const string& name) const;
+        const size_t operator[] (const std::string& name) const;
 
         // modifiers
 
         // add a new entry to the table of variables and return its index. The
         // only necessary information is the variable itself and the first and
         // last indices to the values of its domain
-        size_t add_entry (const variable_t& variable,
+        size_t add_entry (variable_t& variable,
                           const size_t first, const size_t last);
 
-        // assign the index of one value in the domain of the i-th variable to
-        // it
-        void assign (const size_t i, const long int value);
+        // assign the index of one value in the domain of the a variable to it
+        void assign (const size_t variable, const size_t value);
 
         // decrement the number of plausible values of the i-th variable. It
         // returns the new number of plausible values of this entry
-        const size_t decrement_nbvalues (const size_t i);
+        //
+        // INVARIANT: the number of plausible values is guaranteed to be
+        // non-negative
+        const size_t decrement_nbvalues (const size_t i, const size_t delta = 1);
 
         // increment the number of plausible values of the i-th variable. It
         // returns the new number of plausible values of this entry
-        const size_t increment_nbvalues (const size_t i);
+        const size_t increment_nbvalues (const size_t i, const size_t delta = 1);
 
         // set the number of plausible values of the i-th variable to the
         // specified value. It returns the new number of plausible values of
         // this entry
-        const size_t set_nbvalues (const size_t i, const size_t value);
+        const size_t set_nbvalues (const size_t i, const size_t nbvalues);
 
         // capacity
 

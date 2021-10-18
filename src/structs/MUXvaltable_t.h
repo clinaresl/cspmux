@@ -33,13 +33,37 @@ class valtable_t {
         struct _entry_t {
 
             // INVARIANT: each entry of the table of values stores the value,
-            // and the number of (enabled) mutexes it has with other values. A
-            // mutex if enabled, if the mutex is still enabled
+            // the status of each entry, i.e., whether it is still active or
+            // not, and the number of active mutexes it still has, i.e., the
+            // number of enabled values that are threatening it
             value_t<U> _value;
+            bool _status;
             size_t _nbvalues;
 
             // Default constructors of entries are strictly forbidden
             _entry_t<U> () = delete;
+
+            // default copy and move constructors
+            _entry_t (_entry_t&) = default;
+            _entry_t (_entry_t&&) = default;
+
+            // default copy and move assignments
+            _entry_t& operator=(_entry_t&) = default;
+            _entry_t& operator=(_entry_t&&) = default;
+
+            // return whether two entries are the same or not
+            bool operator==(const _entry_t& right) const {
+                return _value == right._value &&
+                    _status == right._status &&
+                    _nbvalues == right._nbvalues;
+            }
+
+            // likewise, define whether they are different
+            bool operator!=(const _entry_t& right) const {
+                return _value != right._value ||
+                    _status != right._status ||
+                    _nbvalues != right._nbvalues;
+            }
         };
 
         // INVARIANT: a table of values consists of a vector of entries. If the
@@ -61,7 +85,7 @@ class valtable_t {
 
             // first, make sure the index requested is within the size of this
             // table
-            if (i < 0 || i >= (int) _table.size ()) {
+            if (i >= _table.size ()) {
                 throw out_of_range ("[valtable_t::get_nbvalues] out of bounds");
             }
 
@@ -70,12 +94,41 @@ class valtable_t {
             return _table[i]._nbvalues;
         }
 
+        // return the status of the i-th value
+        bool get_status (const size_t i) const {
+
+            // first, make sure the index requested is within the size of this
+            // table
+            if (i >= _table.size ()) {
+                throw out_of_range ("[valtable_t::get_status] out of bounds");
+            }
+
+            // in case it is a correct index, return the status of the i-th
+            // value
+            return _table[i]._status;
+        }
+
+        // set the status of the i-th value. It returns the new status
+        bool set_status (const size_t i, const bool status) {
+
+            // first, make sure the index requested is within the size of this
+            // table
+            if (i >= _table.size ()) {
+                throw out_of_range ("[valtable_t::set_status] out of bounds");
+            }
+
+            // otherwise, set the status of the i-th value to the specified
+            // status
+            _table[i]._status = status;
+            return _table[i]._status;
+        }
+
         // return the value associated to a particular index
         const value_t<T>& get_value (const size_t i) const {
 
             // first, make sure the index requested is within the size of this
             // table
-            if (i < 0 || i >= (int) _table.size ()) {
+            if (i >= _table.size ()) {
                 throw out_of_range ("[valtable_t::get_value] out of bounds");
             }
 
@@ -93,8 +146,9 @@ class valtable_t {
 
             // verify now each entry independently
             for (auto i = 0 ; i < _table.size () ; i++) {
-                if (_table[i]._value != right.get_value (i) ||
-                    _table[i]._nbvalues != right.get_nbvalues (i)) {
+                if (_table[i]._nbvalues != right.get_nbvalues (i) ||
+                    _table[i]._status != right.get_status (i) ||
+                    _table[i]._value != right.get_value (i)) {
                     return false;
                 }
             }
@@ -106,37 +160,70 @@ class valtable_t {
         // likewise, determine whether two tables of values are the same or not
         bool operator!=(const valtable_t<T>& right) const {
 
-            cout << "Oh! " << ((*this) == right) << " " << _table.size () << endl; cout.flush ();
             return !((*this) == right);
         }
 
         // modifiers
 
         // insert a new value into this table. Note that its unique index
-        // corresponds to the location it takes into the table. It returns the
-        // index given to this value. The number of mutex values is initialized
-        // to zero
+        // corresponds to the location it takes into the table. New values are
+        // enabled by default and have no active mutex
+        //
+        // It returns the index given to this value.
         size_t insert (const value_t<T>& value) {
-            _table.push_back (_entry_t<T> {value, 0});
+            _table.push_back (_entry_t<T> {value, true, 0});
             return _table.size() - 1;
         }
 
-        // decrement the number of plausible mutexes of the i-th value. It
-        // returns the current number of plausible mutexes of this entry after
-        // the update
-        const size_t decrement_nbvalues (const size_t i) {
-            return --_table[i]._nbvalues;
+        // decrement the number of active mutexes of the i-th value by the given
+        // delta. It returns the current number of plausible mutexes of this
+        // entry after the update
+        const size_t decrement_nbvalues (const size_t i, const size_t delta=1) {
+
+            // first, make sure the index requested is within the size of this
+            // table, and that the value to decrement does not exceed the
+            // current value
+            if (i >= _table.size () || delta > _table[i]._nbvalues) {
+                throw out_of_range ("[valtable::decrement_nbvalues] out of bounds");
+            }
+
+            // in case this is a correct operation, decrement the number of
+            // active mutexes by the given amount
+            _table[i]._nbvalues -= delta;
+            return _table[i]._nbvalues;
         }
 
-        // increment the number of plausible mutexes of the i-th value. It
-        // returns the current number of plausible mutexes of this entry after
-        // the update
-        const size_t increment_nbvalues (const size_t i) {
-            return ++_table[i]._nbvalues;
+        // increment the number of plausible mutexes of the i-th value by the
+        // given delta. It returns the current number of plausible mutexes of
+        // this entry after the update
+        const size_t increment_nbvalues (const size_t i, const size_t delta=1) {
+
+            // first, make sure the index requested is within the size of this
+            // table
+            if (i >= _table.size ()) {
+                throw out_of_range ("[valtable::increment_nbvalues] out of bounds");
+            }
+
+            // in case this is a correct operation, increment the number of
+            // active mutexes by the given amount
+            _table[i]._nbvalues += delta;
+            return _table[i]._nbvalues;
         }
 
-        void set_nbvalues (const size_t i, const size_t nbvalues) {
+        // set the number of active mutexes of the i-th value. Return the number
+        // of active mutexes written
+        const size_t set_nbvalues (const size_t i, const size_t nbvalues) {
+
+            // first, make sure the index requested is within the size of this
+            // table
+            if (i >= _table.size ()) {
+                throw out_of_range ("[valtable::set_nbvalues] out of bounds");
+            }
+
+            // in case this is a correct operation, increment the number of
+            // active mutexes by the given amount
             _table[i]._nbvalues = nbvalues;
+            return _table[i]._nbvalues;
         }
 
         // capacity

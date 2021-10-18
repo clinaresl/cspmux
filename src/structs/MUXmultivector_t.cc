@@ -12,6 +12,40 @@
 
 #include "MUXmultivector_t.h"
 
+// return true whether two multivectors are identical or not. This service is
+// provided for testing purposes
+bool multivector_t::operator==(const multivector_t& right) const {
+
+    // first and overall, verify they both have the same number of items
+    if (_state.size () != right.size ()) {
+        return false;
+    }
+
+    // next we test equality explicitly
+
+    // first, check the vectors separately one by one
+    for (auto i = 0 ; i < _state.size () ; i++) {
+
+        // check that both multivectors have vectors of the same size at
+        // the i-th location
+        if (_state[i].size () != right[i].size ()) {
+            return false;
+        }
+
+        // verify also the contents. Note that items are expected to be in
+        // precisely the same order in both multivectors
+        for (auto j = 0 ; j < _state[i].size () ; j++) {
+            if (_state[i][j] != right[i][j]) {
+                return false;
+            }
+        }
+    }
+
+    // at this point, they are both proven to be equal
+    return true;
+}
+
+
 // Local Variables:
 // mode:cpp
 // fill-column:80

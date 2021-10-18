@@ -21,7 +21,7 @@ class value_t {
 
     private:
 
-        // INVARIANT: values store non-mutable information of any type
+        // INVARIANT: values store inmutable information of any type
         T _value;
 
     public:
@@ -36,9 +36,17 @@ class value_t {
         value_t () = delete;
 
         // Explicit constructors - given the information to store
-        value_t (T value) :
+        value_t (const T value) :
             _value { value }
         {}
+
+        // default copy and move constructors
+        value_t (const value_t<T>&) = default;
+        value_t (const value_t<T>&&) = default;
+
+        // default copy and move assignments
+        value_t<T>& operator=(const value_t<T>&) = default;
+        value_t<T>& operator=(const value_t<T>&&) = default;
 
         // accessors
         const T& get_value () const
@@ -53,7 +61,7 @@ class value_t {
 
         // Likewise, define whether they are different
         bool operator!=(const value_t<T>& right) const {
-            return !((*this) == right);
+            return _value != right.get_value ();
         }
 
 };

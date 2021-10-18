@@ -19,7 +19,7 @@
 bool multibmap_t::get (const size_t i, const size_t j) const {
 
     // first, make sure the value requested is within the length of the bit map
-    if (i < 0 || i >= _multibmap.size ()) {
+    if (i >= _multibmap.size ()) {
         throw out_of_range ("[multibmap_t::get] out of bounds");
     }
 
@@ -31,7 +31,7 @@ bool multibmap_t::get (const size_t i, const size_t j) const {
 void multibmap_t::set (const size_t i, const size_t j, const bool value) {
 
     // first, make sure the value requested is within the length of the bit map
-    if (i < 0 || i >= _multibmap.size ()) {
+    if (i >= _multibmap.size ()) {
         throw out_of_range ("[multibmap_t::set] out of bounds");
     }
 

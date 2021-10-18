@@ -13,42 +13,44 @@
 
 #include "MUXvartable_t.h"
 
+using namespace std;
+
 // return the variable in the i-th location of this table
 const variable_t& vartable_t::get_variable (const size_t i) const {
 
     // first, make sure the index requested is within the size of this table
-    if (i < 0 || i >= (int) _table.size ()) {
+    if (i >= _table.size ()) {
         throw out_of_range ("[vartable_t::get_variable] out of bounds");
     }
 
     // in case it is a correct index, return the variable at that position
-    return _table[i].get_variable ();
+    return _table[i]._variable;
 }
 
 // return the index to the first value in the domain of the i-th variable
 const size_t vartable_t::get_first (const size_t i) const {
 
     // first, make sure the index requested is within the size of this table
-    if (i < 0 || i >= (int) _table.size ()) {
+    if (i >= _table.size ()) {
         throw out_of_range ("[vartable_t::get_first] out of bounds");
     }
 
     // in case it is a correct index, return the index to the first value in the
     // domain at that position
-    return _table[i].get_first ();
+    return _table[i]._first;
 }
 
 // return the index to the last value in the domain of the i-th variable
 const size_t vartable_t::get_last (const size_t i) const {
 
     // first, make sure the index requested is within the size of this table
-    if (i < 0 || i >= (int) _table.size ()) {
+    if (i >= _table.size ()) {
         throw out_of_range ("[vartable_t::get_last] out of bounds");
     }
 
     // in case it is a correct index, return the index to the last value in the
     // domain at that position
-    return _table[i].get_last ();
+    return _table[i]._last;
 }
 
 // return the number of plausible values in the domain of the i-th
@@ -56,26 +58,26 @@ const size_t vartable_t::get_last (const size_t i) const {
 const size_t vartable_t::get_nbvalues (const size_t i) const {
 
     // first, make sure the index requested is within the size of this table
-    if (i < 0 || i >= (int) _table.size ()) {
+    if (i >= _table.size ()) {
         throw out_of_range ("[vartable_t::get_nbvalues] out of bounds");
     }
 
     // in case it is a correct index, return the number of plausible values at
     // that position
-    return _table[i].get_nbvalues ();
+    return _table[i]._nbvalues;
 }
 
 // return the index to the value assigned to the i-th variable. If none
 // has been assigned yet then -1 is returned
-long int vartable_t::get_value (const size_t i) const {
+const size_t vartable_t::get_value (const size_t i) const {
 
     // first, make sure the index requested is within the size of this table
-    if (i < 0 || i >= (int) _table.size ()) {
+    if (i >= _table.size ()) {
         throw out_of_range ("[vartable_t::get_value] out of bounds");
     }
 
     // in case it is a correct index, return the value at that position
-    return _table[i].get_value ();
+    return _table[i]._value;
 }
 
 // return whether two tables of CSP variables are identical or not
@@ -88,11 +90,11 @@ bool vartable_t::operator==(const vartable_t& right) const{
 
     // verify each entry in the table separately
     for (auto i = 0 ; i < _table.size () ; i++) {
-        if (_table[i].get_variable () != right.get_variable (i) ||
-            _table[i].get_first () != right.get_first (i) ||
-            _table[i].get_last () != right.get_last (i) ||
-            _table[i].get_nbvalues () != right.get_nbvalues (i)||
-            _table[i].get_value () != right.get_value (i)) {
+        if (_table[i]._variable != right.get_variable (i) ||
+            _table[i]._first != right.get_first (i) ||
+            _table[i]._last != right.get_last (i) ||
+            _table[i]._nbvalues != right.get_nbvalues (i)||
+            _table[i]._value != right.get_value (i)) {
             return false;
         }
     }
@@ -130,7 +132,7 @@ const size_t vartable_t::operator[] (const string& name) const {
 // add a new entry to the table of variables and return its index. The
 // only necessary information is the variable itself and the first and
 // last indices to the values of its domain
-size_t vartable_t::add_entry (const variable_t& variable,
+size_t vartable_t::add_entry (variable_t& variable,
                               const size_t first, const size_t last) {
 
     // variables are identified by their name which has to be unique. Thus, make
@@ -138,7 +140,7 @@ size_t vartable_t::add_entry (const variable_t& variable,
     size_t index = string::npos;
     try {
         index = (*this) [variable.get_name ()];
-    } catch (runtime_error e) {
+    } catch (runtime_error) {
 
         // if operator[] raised an exception, then this key does not exist and
         // it is safe to proceed
@@ -157,51 +159,53 @@ size_t vartable_t::add_entry (const variable_t& variable,
     return _table.size () - 1;
 }
 
-// assign the index of one value in the domain of the i-th variable to
-// it
-void vartable_t::assign (const size_t i, const long int value) {
+// assign the index of one value in the domain of a variable to it
+void vartable_t::assign (const size_t variable, const size_t value) {
 
     // first, make sure the index requested is within the size of this table
-    if (i < 0 || i >= (int) _table.size ()) {
+    if (variable >= _table.size ()) {
         throw out_of_range ("[vartable_t::assign] out of bounds");
     }
 
     // in case it is a correct index, assign the given value to this variable
-    _table[i] = value;
+    _table[variable] = value;
 }
 
 // decrement the number of plausible values of the i-th variable. It returns the
 // new number of plausible values of this entry
-const size_t vartable_t::decrement_nbvalues (const size_t i) {
+//
+// INVARIANT: the number of plausible values is guaranteed to be non-negative
+const size_t vartable_t::decrement_nbvalues (const size_t i, const size_t delta) {
 
-    // first, make sure the index requested is within the size of this table
-    if (i < 0 || i >= (int) _table.size ()) {
+    // first, make sure the index requested is within the size of this table,
+    // and that the value to decrement does not exceed the current value
+    if (i >= _table.size () || delta > _table[i]._nbvalues) {
         throw out_of_range ("[vartable_t::decrement_nbvalues] out of bounds");
     }
 
     // in case it is a correct index, decrement the number of plausible values
     // of this variable
-    _table[i] -= 1;
+    _table[i]._nbvalues -= delta;
 
     // and return the new number of plausible values
-    return _table[i].get_nbvalues ();
+    return _table[i]._nbvalues;
 }
 
 // increment the number of plausible values of the i-th variable. It returns the
 // new number of plausible values of this entry
-const size_t vartable_t::increment_nbvalues (const size_t i) {
+const size_t vartable_t::increment_nbvalues (const size_t i, const size_t delta) {
 
     // first, make sure the index requested is within the size of this table
-    if (i < 0 || i >= (int) _table.size ()) {
+    if (i >= _table.size ()) {
         throw out_of_range ("[vartable_t::increment_nbvalues] out of bounds");
     }
 
     // in case it is a correct index, increment the number of plausible values
     // of this variable
-    _table[i] += 1;
+    _table[i]._nbvalues += delta;
 
     // and return the new number of plausible values
-    return _table[i].get_nbvalues ();
+    return _table[i]._nbvalues;
 }
 
 // set the number of plausible values of the i-th variable to the specified
@@ -209,7 +213,7 @@ const size_t vartable_t::increment_nbvalues (const size_t i) {
 const size_t vartable_t::set_nbvalues (const size_t i, const size_t value) {
 
     // first, make sure the index requested is within the size of this table
-    if (i < 0 || i >= (int) _table.size ()) {
+    if (i >= _table.size ()) {
         throw out_of_range ("[vartable_t::set_nbvalues] out of bounds");
     }
 
@@ -218,7 +222,7 @@ const size_t vartable_t::set_nbvalues (const size_t i, const size_t value) {
     _table[i]._nbvalues = value;
 
     // and return the new number of plausible values
-    return _table[i].get_nbvalues ();
+    return _table[i]._nbvalues;
 }
 
 // Local Variables:

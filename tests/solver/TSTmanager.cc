@@ -290,7 +290,7 @@ TEST_F (ManagerFixture, ValNbvaluesManager) {
         // mutexes stored in each value
         multivector_t* multivector = m.get_multivector ();
         for (size_t j = 0 ; j < m.get_valtable ().size () ; j++) {
-            ASSERT_EQ (multivector->get (j).size (), m.get_valtable ().get_nbvalues (j));
+            ASSERT_EQ ((*multivector)[j].size (), m.get_valtable ().get_nbvalues (j));
         }
     }
 }
@@ -1019,7 +1019,7 @@ TEST_F (ManagerFixture, UnwindFullAssignIntManager) {
     // Add now a constraint (in the form of a lambda function) which returns
     // false if the sum of its arguments is divisible by a number between 2 and
     // 5, over two variables randomly chosen and retrieve the multivector
-    quotient = 2 + rand ()%4;
+    quotient = 2 + (rand ()%4);
     mFullAssignment.add_constraint([] (int val1, int val2) {
         return (val1 + val2) % quotient != 0;
     }, variable_t{names[variables[0]]}, variable_t{names[variables[1]]});
@@ -1028,7 +1028,7 @@ TEST_F (ManagerFixture, UnwindFullAssignIntManager) {
     // make a backup copy of the main structs in the manager
     vartable_t vartableFullAssignment (mFullAssignment.get_vartable ());
     valtable_t valtableFullAssignment (mFullAssignment.get_valtable ());
-    multivector_t multivectorFullAssignment (*mFullAssignment.get_multivector ());
+    // multivector_t multivectorFullAssignment (*mFullAssignment.get_multivector ());
 
     // now, performe the tests
     for (auto i = 0 ; i < NB_TESTS ; i++) {
@@ -1041,10 +1041,11 @@ TEST_F (ManagerFixture, UnwindFullAssignIntManager) {
 
         // modify the value of the first variable randomly selected among those
         // in its domain
-        size_t variable = variables[0];
+        auto randidx = rand ()%2;
+        size_t variable = variables[randidx];
         size_t last = mFullAssignment.get_vartable ().get_first (variable) +
             rand () % (1 + mFullAssignment.get_vartable ().get_last (variable) -
-            mFullAssignment.get_vartable ().get_first (variable));
+                       mFullAssignment.get_vartable ().get_first (variable));
 
         // and make a backup copy of the current value of the selected variable
         size_t prev = mFullAssignment.get_vartable ().get_value (variable);
@@ -1068,12 +1069,33 @@ TEST_F (ManagerFixture, UnwindFullAssignIntManager) {
         // STATUS[MUTEX] <- FALSE
         // --------------------------------------------------------------------
 
-        // verify the value randomly selected has a strictly positive number of
-        // mutexes. Verify, indeed, the number of enabled mutexes equals its
-        // number of mutexes
-        ASSERT_TRUE (multivector->get(last).size () > 0);
-        ASSERT_EQ (multivector->get(last).size (),
+        // verify the number of enabled mutexes equals its number of mutexes.
+        // Verify, indeed the value randomly selected has a strictly positive
+        // number of mutexes. Although very unlikely it is possible to have a
+        // null number of mutexes. If this is the case, strictly verify that
+        // this is correct
+        if ((*multivector)[last].size () == 0) {
+
+            auto lastvalue = mFullAssignment.get_valtable().get_value(last).get_value ();
+            cout << " Variable idx  : " << variables[randidx] << endl;
+            cout << " \t 1st value  : " << mFullAssignment.get_vartable ().get_first (variable) << endl;
+            cout << " \t lst value  : " << mFullAssignment.get_vartable ().get_last (variable) << endl;
+            cout << " 1-Variable idx: " << variables[1-randidx] << endl;
+            cout << " \t 1st value  : " << mFullAssignment.get_vartable ().get_first (variables[1-randidx]) << endl;
+            cout << " \t lst value  : " << mFullAssignment.get_vartable ().get_last (variables[1-randidx]) << endl;
+            cout << " Quotient      : " << quotient << endl;
+            cout << " Nuevo índice  : " << last << endl;
+            cout << " Nuevo valor   : " << lastvalue << endl;
+            for (auto kidx = mFullAssignment.get_vartable ().get_first(1-randidx) ;
+                 kidx <= mFullAssignment.get_vartable ().get_last (1-randidx) ;
+                 kidx++) {
+                cout << "\t" << lastvalue << " + " << mFullAssignment.get_valtable().get_value (kidx).get_value () << ": " << lastvalue + mFullAssignment.get_valtable().get_value (kidx).get_value () << endl;
+                cout << "\t\t remainder: " << (lastvalue + mFullAssignment.get_valtable().get_value (kidx).get_value ()) % quotient << endl;
+            }
+        }
+        ASSERT_EQ ((*multivector)[last].size (),
                    mFullAssignment.get_valtable().get_nbvalues (last));
+        ASSERT_TRUE ((*multivector)[last].size () > 0);
 
         // count the number of values whose number of enabled mutexes has been
         // updated
@@ -1083,7 +1105,7 @@ TEST_F (ManagerFixture, UnwindFullAssignIntManager) {
         // the variable raondomly picked up. For each value disabled, update
         // also the number of enabled mutexes of those values mutex with the one
         // being disabled.
-        for (auto mvalue : multivector->get(last)) {
+        for (auto mvalue : (*multivector)[last]) {
 
             // verify this is enabled by default. Certainly, the same value
             // might be modified in several iterations of this overall loop (the
@@ -1136,7 +1158,7 @@ TEST_F (ManagerFixture, UnwindFullAssignIntManager) {
 
             // in addition, update the number of enabled mutexes of those values
             // which are mutex with this one
-            for (auto jvalue : multivector->get (mvalue)) {
+            for (auto jvalue : (*multivector)[mvalue]) {
 
                 // make a backup copy of the current number of enabled mutexes
                 // of the value mvalue
@@ -1189,7 +1211,7 @@ TEST_F (ManagerFixture, UnwindFullAssignIntManager) {
         //    been updated): values that have updated the number of enabled
         //    mutexes. If a value is disabled then those mutex with it are not
         //    threaten anymore
-        ASSERT_EQ (frame.size (), 1+2*multivector->get(last).size ()+nbvalues_updated);
+        ASSERT_EQ (frame.size (), 1+2*(*multivector)[last].size ()+nbvalues_updated);
 
         // before undoing changes, ensure that the main structs of the solver
         // have indeed being modified
@@ -1209,7 +1231,7 @@ TEST_F (ManagerFixture, UnwindFullAssignIntManager) {
 
         // and now verify that all mutexes of the randomly selected value are
         // enabled again along with other information
-        for (auto mvalue : multivector->get(last)) {
+        for (auto mvalue : (*multivector)[last]) {
 
             // first, ensure that the status of all values that were mutex has
             // been restored
@@ -1222,7 +1244,7 @@ TEST_F (ManagerFixture, UnwindFullAssignIntManager) {
 
             // and now verify also that the number of enabled mutexes of those
             // values which are mutex with mvalue has been restored as well
-            for (auto jvalue : multivector->get (mvalue)) {
+            for (auto jvalue : (*multivector)[mvalue]) {
                 ASSERT_EQ (mFullAssignment.get_valtable ().get_nbvalues (jvalue),
                            valtableFullAssignment.get_nbvalues (jvalue));
             }
