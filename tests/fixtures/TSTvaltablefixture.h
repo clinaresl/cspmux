@@ -19,6 +19,7 @@
 #include "gtest/gtest.h"
 
 #include "../TSTdefs.h"
+#include "../TSThelpers.h"
 #include "../../src/structs/MUXvaltable_t.h"
 
 // Class definition
@@ -33,6 +34,21 @@ class ValtableFixture : public ::testing::Test {
             // just initialize the random seed to make sure that every iteration
             // is performed over different random data
             srand (time (nullptr));
+        }
+
+        // populate the given val table with n different values, each one
+        // holding an integer value which are returned in values
+        void populate (valtable_t<int>& valtable,
+                       int n, vector<int>& values) {
+
+            // randomly determine the int values to write in each location
+            values = randVectorInt (n, MAX_LENGTH/1000);
+
+            // and now write all these values and verify whether the location
+            // taken in the val table is correct or not
+            for (auto j = 0 ; j < values.size () ; j++) {
+                ASSERT_EQ (valtable.insert (values[j]), j);
+            }
         }
 };
 

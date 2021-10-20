@@ -17,25 +17,25 @@
 bool multivector_t::operator==(const multivector_t& right) const {
 
     // first and overall, verify they both have the same number of items
-    if (_state.size () != right.size ()) {
+    if (_mutex.size () != right.size ()) {
         return false;
     }
 
     // next we test equality explicitly
 
     // first, check the vectors separately one by one
-    for (auto i = 0 ; i < _state.size () ; i++) {
+    for (auto i = 0 ; i < _mutex.size () ; i++) {
 
         // check that both multivectors have vectors of the same size at
         // the i-th location
-        if (_state[i].size () != right[i].size ()) {
+        if (_mutex[i].size () != right[i].size ()) {
             return false;
         }
 
         // verify also the contents. Note that items are expected to be in
         // precisely the same order in both multivectors
-        for (auto j = 0 ; j < _state[i].size () ; j++) {
-            if (_state[i][j] != right[i][j]) {
+        for (auto j = 0 ; j < _mutex[i].size () ; j++) {
+            if (_mutex[i][j] != right[i][j]) {
                 return false;
             }
         }

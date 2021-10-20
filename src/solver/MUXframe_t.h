@@ -39,16 +39,35 @@ class frame_t {
             _frame { vector<action_t>() }
         {}
 
+        // default copy and move constructors
+        frame_t (const frame_t&) = default;
+        frame_t (frame_t&&) = default;
+
+        // default copy and move assignments
+        frame_t& operator=(const frame_t&) = default;
+        frame_t& operator=(frame_t&&) = default;
+
         // accessors
 
         // the following function invokes the execution of all actions in this
         // frame. Note the execution does not remove any action in it
-        void exec () const;
+        void exec () const {
+
+            // Importantly, actions are executed in reversed order
+            for (auto it = _frame.rbegin () ; it != _frame.rend () ; ++it) {
+
+                // Invoke the execution of this action
+                it->exec ();
+            }
+        }
 
         // modifiers
 
         // inserts a new action in the frame
-        void push (const action_t& action);
+        frame_t& operator+=(const action_t& action) {
+            _frame.push_back (action);
+            return *this;
+        }
 
         // capacity
 

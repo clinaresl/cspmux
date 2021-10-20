@@ -40,14 +40,6 @@ class value_t {
             _value { value }
         {}
 
-        // default copy and move constructors
-        value_t (const value_t<T>&) = default;
-        value_t (const value_t<T>&&) = default;
-
-        // default copy and move assignments
-        value_t<T>& operator=(const value_t<T>&) = default;
-        value_t<T>& operator=(const value_t<T>&&) = default;
-
         // accessors
         const T& get_value () const
         { return _value; }

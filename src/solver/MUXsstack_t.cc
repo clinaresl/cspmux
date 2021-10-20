@@ -14,28 +14,6 @@
 
 #include "MUXsstack_t.h"
 
-// inserts a new frame at the top of the stack
-void sstack_t::push (const frame_t& frame) {
-
-    // just simply add it
-    _sstack.push_back (frame);
-}
-
-// execute and remove the frame at the top of the stack. This function
-// is the combination of exec and pop indeed
-void sstack_t::unwind () {
-
-    // before proceeding make sure there is at least one frame
-    if (_sstack.size () == 0) {
-        throw runtime_error ("[sstack_t::unwind] Empty stack!");
-    }
-
-    // first, execute the frame at the top of the stack, i.e., the last one
-    _sstack.back ().exec ();
-
-    // and remove it upon successful termination
-    _sstack.pop_back ();
-}
 
 
 // Local Variables:

@@ -13,6 +13,8 @@
 
 #include "TSThelpers.h"
 
+using namespace std;
+
 // Generate a random string with characters in the sequence ASCII(32) -
 // ASCII(126) which do not appear in the string exclude
 string randString (int length, string exclude)

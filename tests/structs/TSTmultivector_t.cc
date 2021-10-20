@@ -48,55 +48,12 @@ TEST_F (MultivectorFixture, MultivectorEmptyVectors) {
     }
 }
 
-// Checks all vectors are enabled by default
-// ----------------------------------------------------------------------------
-TEST_F (MultivectorFixture, MultivectorEnabled) {
-
-    for (auto i = 0 ; i < NB_TESTS ; i++) {
-
-        // create a multivector with a random length
-        size_t mvsize = random () % MAX_LENGTH/1000000;
-        multivector_t multivector (mvsize);
-
-        // check that all entries are enabled by default
-        for (auto j = 0 ; j < mvsize ; j++ ) {
-            ASSERT_TRUE (multivector.get_status (j));
-        }
-    }
-}
-
-// Checks the status of all vectors can be independently set and retrieved
-// ----------------------------------------------------------------------------
-TEST_F (MultivectorFixture, MultivectorStatus) {
-
-    for (auto i = 0 ; i < NB_TESTS ; i++) {
-
-        // create a multivector with a random length
-        size_t mvsize = random () % MAX_LENGTH/1000000;
-        multivector_t multivector (mvsize);
-
-        // randomly decide the status of each entry of the multivector
-        vector<int> status = randVectorInt (mvsize, 2);
-
-        // and set the values in the multivector
-        for (auto j = 0 ; j < mvsize ; j++) {
-            multivector.set_status (j, status[j]);
-        }
-
-        // check that all entries have been properly set
-        for (auto j = 0 ; j < mvsize ; j++ ) {
-            ASSERT_EQ (multivector.get_status (j), status[j]);
-        }
-    }
-}
-
 // Checks that multivectors can be read and written properly
 // ----------------------------------------------------------------------------
 TEST_F (MultivectorFixture, MultivectorWriteRead) {
 
     for (auto i = 0 ; i < NB_TESTS/1000 ; i++) {
 
-        // create a multivector with a random length
         // create a multivector with a random length
         size_t mvsize = random () % MAX_LENGTH/1000000;
         multivector_t multivector (mvsize);
@@ -109,6 +66,9 @@ TEST_F (MultivectorFixture, MultivectorWriteRead) {
         // meant to be true; whereas those absent are meant to be false
         for (auto loc : locs) {
             multivector.set (loc/mvsize, loc%mvsize);
+
+            // verify this value has been written into the multivector
+            ASSERT_TRUE (multivector.find (loc/mvsize, loc%mvsize));
         }
 
         // verify that all values have been properly set

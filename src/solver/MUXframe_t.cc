@@ -12,25 +12,6 @@
 
 #include "MUXframe_t.h"
 
-// the following function invokes the execution of all actions in this
-// frame. Note the execution does not remove any action in it
-void frame_t::exec () const {
-
-    // Importantly, actions are executed in reversed order
-    for (auto it = _frame.rbegin () ; it != _frame.rend () ; ++it ) {
-
-        // invoke the execution of this action
-        it->exec ();
-    }
-}
-
-// inserts a new action in the frame
-void frame_t::push (const action_t& action) {
-
-    // just simply add it
-    _frame.push_back (action);
-}
-
 
 // Local Variables:
 // mode:cpp

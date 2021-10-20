@@ -47,6 +47,14 @@ class action_t {
             _next { next }
         {}
 
+        // default copy and move constructors
+        action_t (const action_t&) = default;
+        action_t (action_t&&) = default;
+
+        // default copy and move assignments
+        action_t& operator=(const action_t&);
+        action_t& operator=(const action_t&&);
+
         // accessors
 
         // the following function invokes the execution of the action with its

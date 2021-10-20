@@ -43,11 +43,11 @@ class VartableFixture : public ::testing::Test {
         //    indices[j]: <first, last> indices to the values of its domain
         void populate (vartable_t& vartable,
                        int n, int m,
-                       vector<string>& names, vector<pair<int,int>>& indices) {
+                       std::vector<std::string>& names, std::vector<std::pair<int,int>>& indices) {
 
             // create a vector to hold all variables that will be inserted into
             // this table, and randomly choose a name for each one
-            vector<variable_t> variables;
+            std::vector<variable_t> variables;
             for (auto j = 0 ; j < n ; j++) {
                 names.push_back (randString (50));
                 variables.push_back (variable_t (names[j]));

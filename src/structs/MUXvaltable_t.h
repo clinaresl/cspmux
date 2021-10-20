@@ -94,6 +94,22 @@ class valtable_t {
             return _table[i]._nbvalues;
         }
 
+        // set the number of active mutexes of the i-th value. Return the number
+        // of active mutexes written
+        const size_t set_nbvalues (const size_t i, const size_t nbvalues) {
+
+            // first, make sure the index requested is within the size of this
+            // table
+            if (i >= _table.size ()) {
+                throw out_of_range ("[valtable::set_nbvalues] out of bounds");
+            }
+
+            // in case this is a correct operation, increment the number of
+            // active mutexes by the given amount
+            _table[i]._nbvalues = nbvalues;
+            return _table[i]._nbvalues;
+        }
+
         // return the status of the i-th value
         bool get_status (const size_t i) const {
 
@@ -136,6 +152,12 @@ class valtable_t {
             return _table[i]._value;
         }
 
+        // the random access operator instead returns the raw value of a value
+        // type directly
+        const T operator[] (const size_t i) const {
+            return get_value (i).get_value ();
+        }
+
         // return whether two tables of values are identical or not
         bool operator==(const valtable_t<T>& right) const {
 
@@ -165,11 +187,17 @@ class valtable_t {
 
         // modifiers
 
-        // insert a new value into this table. Note that its unique index
-        // corresponds to the location it takes into the table. New values are
-        // enabled by default and have no active mutex
-        //
-        // It returns the index given to this value.
+        // insert a new value into this table. New values are enabled by default
+        // and have no active mutex
+        valtable_t& operator+= (const value_t<T>& value) {
+            _table.push_back (_entry_t<T> {value, true, 0});
+            return *this;
+        }
+
+        // insert a new value into this table, and return the index associated
+        // to it. Note that its unique index corresponds to the location it
+        // takes into the table. New values are enabled by default and have no
+        // active mutex
         size_t insert (const value_t<T>& value) {
             _table.push_back (_entry_t<T> {value, true, 0});
             return _table.size() - 1;
@@ -207,22 +235,6 @@ class valtable_t {
             // in case this is a correct operation, increment the number of
             // active mutexes by the given amount
             _table[i]._nbvalues += delta;
-            return _table[i]._nbvalues;
-        }
-
-        // set the number of active mutexes of the i-th value. Return the number
-        // of active mutexes written
-        const size_t set_nbvalues (const size_t i, const size_t nbvalues) {
-
-            // first, make sure the index requested is within the size of this
-            // table
-            if (i >= _table.size ()) {
-                throw out_of_range ("[valtable::set_nbvalues] out of bounds");
-            }
-
-            // in case this is a correct operation, increment the number of
-            // active mutexes by the given amount
-            _table[i]._nbvalues = nbvalues;
             return _table[i]._nbvalues;
         }
 

@@ -25,35 +25,45 @@ class multivector_t {
 
         // INVARIANT: A multivector consists of an array of vectors that
         // contains the mutexes of each entry
-        std::vector<std::vector<size_t>> _state;
+        std::vector<std::vector<size_t>> _mutex;
 
     public:
 
         // The default constructor is strictly forbidden
         multivector_t () = delete;
 
-        // Explicit constructor - given the length of the array
-        multivector_t (const size_t len) :
-            _state { std::vector<std::vector<size_t>>(len, std::vector<size_t>()) }
+        // default copy and move constructors
+        multivector_t (multivector_t&) = default;
+        multivector_t (multivector_t&&) = default;
+
+        // default copy and move assignments
+        multivector_t& operator=(multivector_t&) = default;
+        multivector_t& operator=(multivector_t&&) = default;
+
+        // Explicit constructor - given the length of the array. Note that
+        // implicit casting is forbidden
+        explicit multivector_t (const size_t len) :
+            _mutex { std::vector<std::vector<size_t>>(len, std::vector<size_t>()) }
         {}
 
         // accessors
 
-        // the following service is provided solely for testing purposes
+        // Return true if and only if the specified value is found in the i-th
+        // vector. the following service is provided solely for testing purposes
         bool find (const size_t i, const size_t value) const {
-            return (std::find (_state[i].begin (),
-                               _state[i].end (),
-                               value) != _state[i].end ());
+            return (std::find (_mutex[i].begin (),
+                               _mutex[i].end (),
+                               value) != _mutex[i].end ());
         }
 
         // get the i-th vector
         const std::vector<size_t>& operator[] (const size_t i) const {
-            return _state[i];
+            return _mutex[i];
         }
 
         // set the value j in the i-th vector
         void set (const size_t i, const size_t j) {
-            _state[i].push_back (j);
+            _mutex[i].push_back (j);
         }
 
         // return whether two multivectors are identical or not. This service is
@@ -68,7 +78,7 @@ class multivector_t {
 
         // return the number of entries in the multivector
         size_t size () const {
-            return _state.size ();
+            return _mutex.size ();
         }
 };
 
