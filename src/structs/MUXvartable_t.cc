@@ -122,7 +122,7 @@ const size_t vartable_t::operator[] (const string& name) const {
 
     // in case no variable is registered with this name, raise an exception
     if (it == _indices.end ()) {
-        throw runtime_error ("[vartable_t::operator[]] name not found");
+        throw runtime_error ("[vartable_t::operator[string]] name not found");
     }
 
     // otherwise, return its location
@@ -132,8 +132,8 @@ const size_t vartable_t::operator[] (const string& name) const {
 // add a new entry to the table of variables and return its index. The
 // only necessary information is the variable itself and the first and
 // last indices to the values of its domain
-size_t vartable_t::add_entry (variable_t& variable,
-                              const size_t first, const size_t last) {
+size_t vartable_t::insert (variable_t& variable,
+                           const size_t first, const size_t last) {
 
     // variables are identified by their name which has to be unique. Thus, make
     // sure this variable does not exist in this table

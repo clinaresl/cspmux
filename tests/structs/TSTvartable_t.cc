@@ -12,6 +12,8 @@
 
 #include "../fixtures/TSTvartablefixture.h"
 
+using namespace std;
+
 // Checks the creation of a table of CSP variables generates an empty table
 // ----------------------------------------------------------------------------
 TEST_F (VartableFixture, EmptyVartable) {
@@ -47,7 +49,7 @@ TEST_F (VartableFixture, InitVartable) {
         for (auto j = 0 ; j < NB_VARIABLES ; j++) {
 
             // Verify the name of the variable
-            ASSERT_EQ (vartable.get_variable (j).get_name (),
+            ASSERT_EQ (vartable[j].get_name (),
                        names[j]);
 
             // and also the limits of its domain
@@ -61,14 +63,15 @@ TEST_F (VartableFixture, InitVartable) {
                        1 + indices[j].second - indices[j].first);
 
             // and that no value is initially assigned
-            ASSERT_EQ (vartable.get_value (j), -1);
+            ASSERT_EQ (vartable.get_value (j), string::npos);
         }
     }
 }
 
-// Checks that looking up a variable in the vartable returns the right location
+// Checks that looking up a variable's name in the vartable returns the right
+// location
 // ----------------------------------------------------------------------------
-TEST_F (VartableFixture, LookupVartable) {
+TEST_F (VartableFixture, LookupNameVartable) {
 
     for (auto i = 0 ; i < NB_TESTS/100 ; i++) {
 
@@ -91,6 +94,32 @@ TEST_F (VartableFixture, LookupVartable) {
     }
 }
 
+// Checks that looking up a location in the vartable returns the right variable
+// ----------------------------------------------------------------------------
+TEST_F (VartableFixture, LookupIndexVartable) {
+
+    for (auto i = 0 ; i < NB_TESTS/100 ; i++) {
+
+        // create an empty table of CSP variables, i.e., with no values at all
+        vartable_t vartable;
+
+        // and now populate it with up to NB_VARIABLES and their domains
+        vector<string> names;
+        vector<pair<int, int>> indices;
+        populate (vartable, NB_VARIABLES, NB_VALUES, names, indices);
+
+        // randomly choose a location
+        int loc = rand () % names.size ();
+
+        // lookup the variable with the name at location loc and verify it
+        // returns the value loc ---this should work because variables are
+        // assigned indices sequentially and names contains the names of the
+        // variables added to the table in the same sequence they were added
+        variable_t newvar = variable_t {names[loc]};
+        ASSERT_EQ (vartable[loc], newvar);
+    }
+}
+
 // Checks that reinserting a second variable with an existing name automatically
 // raises an exception
 // ----------------------------------------------------------------------------
@@ -108,14 +137,15 @@ TEST_F (VartableFixture, RepeatedVariableVartable) {
 
         // randomly choose any name and try inserting a variable with that name.
         // For this, the first and last indices are fake, do not mind
-        EXPECT_THROW (vartable.add_entry (names[rand ()%names.size ()], 0, 1),
+        variable_t newvar = variable_t {names[rand ()%names.size ()]};
+        EXPECT_THROW (vartable.insert (newvar, 0, 1),
                       runtime_error);
     }
 }
 
 // Checks that decrementing the number of plausible values works as expected
 // ----------------------------------------------------------------------------
-TEST_F (VartableFixture, DecrementVartable) {
+TEST_F (VartableFixture, DecrementNbValuesVartable) {
 
     for (auto i = 0 ; i < NB_TESTS/100 ; i++) {
 
@@ -150,7 +180,7 @@ TEST_F (VartableFixture, DecrementVartable) {
 
 // Checks that incrementing the number of plausible values works as expected
 // ----------------------------------------------------------------------------
-TEST_F (VartableFixture, IncrementVartable) {
+TEST_F (VartableFixture, IncrementNbValuesVartable) {
 
     for (auto i = 0 ; i < NB_TESTS/100 ; i++) {
 
@@ -187,7 +217,7 @@ TEST_F (VartableFixture, IncrementVartable) {
 
 // Checks that setting the number of plausible values works as expected
 // ----------------------------------------------------------------------------
-TEST_F (VartableFixture, SettingVartable) {
+TEST_F (VartableFixture, SettingNbValuesVartable) {
 
     for (auto i = 0 ; i < NB_TESTS/100 ; i++) {
 

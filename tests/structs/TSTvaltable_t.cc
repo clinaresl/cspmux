@@ -13,6 +13,8 @@
 #include "../TSThelpers.h"
 #include "../fixtures/TSTvaltablefixture.h"
 
+using namespace std;
+
 // Checks the creation of a table of values generates an empty table. By
 // default, the type of values is int
 // ----------------------------------------------------------------------------

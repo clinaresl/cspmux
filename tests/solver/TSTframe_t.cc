@@ -17,6 +17,27 @@
 
 // Verify that actions can be pushed to a frame
 // ----------------------------------------------------------------------------
+TEST_F (FrameFixture, EmptyFrames) {
+
+    for (auto i = 0 ; i < NB_TESTS ; i++) {
+
+        // create an empty frame
+        frame_t frame;
+
+        // verify its size is strictly equal to 0
+        ASSERT_EQ (frame.size (), 0);
+
+        // add nothing but execute the frame. Nothing bad should happen, just
+        // simply that
+        frame.exec ();
+
+        // now, verify the frame is still empty
+        ASSERT_EQ (frame.size (), 0);
+    }
+}
+
+// Verify that actions can be pushed to a frame
+// ----------------------------------------------------------------------------
 TEST_F (FrameFixture, PushFrame) {
 
     for (auto i = 0 ; i < NB_TESTS ; i++) {
@@ -34,8 +55,8 @@ TEST_F (FrameFixture, PushFrame) {
 
             // all actions have the same lambda function which actually does
             // nothing and receives a null index and two random numbers
-            frame.push (action_t {[] (size_t index, size_t val1, size_t val2) {},
-                0, size_t(rand ()), size_t(rand ())});
+            frame += action_t {[] (size_t index, size_t val1, size_t val2) {},
+                    0, size_t(rand ()), size_t(rand ())};
         }
 
         // now, verify there are exactly as many actions in this frame as
@@ -68,10 +89,10 @@ TEST_F (FrameFixture, ExecFrame) {
             // all actions have the same lambda function which inserts two
             // numbers (in reversed order) in a vector and receives the
             // arguments to insert ---note the index is uselss in this tests
-            frame.push (action_t {[] (size_t index, size_t val1, size_t val2) {
+            frame += action_t {[] (size_t index, size_t val1, size_t val2) {
                 frameContainer.push_back (val2);
                 frameContainer.push_back (val1);
-            }, 0, size_t(ints[j*2]), size_t(ints[j*2+1])});
+            }, 0, size_t(ints[j*2]), size_t(ints[j*2+1])};
         }
 
         // in passing verify (again!) there are exactly as many actions in this

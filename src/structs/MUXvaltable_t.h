@@ -19,8 +19,6 @@
 
 #include "MUXvalue_t.h"
 
-using namespace std;
-
 // Class definition
 //
 // Definition of a table of values of any type
@@ -68,13 +66,13 @@ class valtable_t {
 
         // INVARIANT: a table of values consists of a vector of entries. If the
         // index of a value is known, then it can be retrieved in O (1)
-        vector<_entry_t<T>> _table;
+        std::vector<_entry_t<T>> _table;
 
     public:
 
         // Default constructor - tables can be created only by default
         valtable_t () :
-            _table { vector<_entry_t<T>>() }
+            _table { std::vector<_entry_t<T>>() }
         {}
 
         // accessors
@@ -86,7 +84,7 @@ class valtable_t {
             // first, make sure the index requested is within the size of this
             // table
             if (i >= _table.size ()) {
-                throw out_of_range ("[valtable_t::get_nbvalues] out of bounds");
+                throw std::out_of_range ("[valtable_t::get_nbvalues] out of bounds");
             }
 
             // in case it is a correct index, return the number of mutex values
@@ -101,7 +99,7 @@ class valtable_t {
             // first, make sure the index requested is within the size of this
             // table
             if (i >= _table.size ()) {
-                throw out_of_range ("[valtable::set_nbvalues] out of bounds");
+                throw std::out_of_range ("[valtable::set_nbvalues] out of bounds");
             }
 
             // in case this is a correct operation, increment the number of
@@ -116,7 +114,7 @@ class valtable_t {
             // first, make sure the index requested is within the size of this
             // table
             if (i >= _table.size ()) {
-                throw out_of_range ("[valtable_t::get_status] out of bounds");
+                throw std::out_of_range ("[valtable_t::get_status] out of bounds");
             }
 
             // in case it is a correct index, return the status of the i-th
@@ -130,7 +128,7 @@ class valtable_t {
             // first, make sure the index requested is within the size of this
             // table
             if (i >= _table.size ()) {
-                throw out_of_range ("[valtable_t::set_status] out of bounds");
+                throw std::out_of_range ("[valtable_t::set_status] out of bounds");
             }
 
             // otherwise, set the status of the i-th value to the specified
@@ -145,7 +143,7 @@ class valtable_t {
             // first, make sure the index requested is within the size of this
             // table
             if (i >= _table.size ()) {
-                throw out_of_range ("[valtable_t::get_value] out of bounds");
+                throw std::out_of_range ("[valtable_t::get_value] out of bounds");
             }
 
             // in case it is a correct index, return the value at that position
@@ -212,7 +210,7 @@ class valtable_t {
             // table, and that the value to decrement does not exceed the
             // current value
             if (i >= _table.size () || delta > _table[i]._nbvalues) {
-                throw out_of_range ("[valtable::decrement_nbvalues] out of bounds");
+                throw std::out_of_range ("[valtable::decrement_nbvalues] out of bounds");
             }
 
             // in case this is a correct operation, decrement the number of
@@ -229,7 +227,7 @@ class valtable_t {
             // first, make sure the index requested is within the size of this
             // table
             if (i >= _table.size ()) {
-                throw out_of_range ("[valtable::increment_nbvalues] out of bounds");
+                throw std::out_of_range ("[valtable::increment_nbvalues] out of bounds");
             }
 
             // in case this is a correct operation, increment the number of

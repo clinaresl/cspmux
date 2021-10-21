@@ -61,8 +61,8 @@ class VartableFixture : public ::testing::Test {
             // and now add these variables along with their domain to the table of
             // CSP variables
             for (auto j = 0 ; j < n ; j++) {
-                vartable.add_entry (variables[j],
-                                    indices[j].first, indices[j].second);
+                vartable.insert (variables[j],
+                                 indices[j].first, indices[j].second);
             }
         }
 };

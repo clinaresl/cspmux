@@ -178,7 +178,7 @@ class manager {
 
             // next, add this variable to the table of CSP variables along with
             // the bounds of its domain
-            _vartable.add_entry (variable, first, last);
+            _vartable.insert (variable, first, last);
 
         }
 

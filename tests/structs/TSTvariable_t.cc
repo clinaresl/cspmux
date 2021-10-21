@@ -13,6 +13,8 @@
 #include "../TSThelpers.h"
 #include "../fixtures/TSTvariablefixture.h"
 
+using namespace std;
+
 // Checks the creation of variables without a description. It verifies the name
 // is correctly stored and that the description is empty
 // ----------------------------------------------------------------------------

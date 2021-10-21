@@ -39,7 +39,7 @@ class ValtableFixture : public ::testing::Test {
         // populate the given val table with n different values, each one
         // holding an integer value which are returned in values
         void populate (valtable_t<int>& valtable,
-                       int n, vector<int>& values) {
+                       int n, std::vector<int>& values) {
 
             // randomly determine the int values to write in each location
             values = randVectorInt (n, MAX_LENGTH/1000);

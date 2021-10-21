@@ -44,8 +44,8 @@ TEST_F (SstackFixture, PushSstack) {
 
                 // all actions have the same lambda function which actually does
                 // nothing and receives a null index and two random numbers
-                frame.push (action_t {[] (size_t index, size_t val1, size_t val2) {},
-                    0, size_t(rand ()), size_t(rand ())});
+                frame += action_t {[] (size_t index, size_t val1, size_t val2) {},
+                    0, size_t(rand ()), size_t(rand ())};
             }
 
             // in passing, why not, verify that the size of the frame is the
@@ -53,7 +53,7 @@ TEST_F (SstackFixture, PushSstack) {
             ASSERT_EQ (frame.size (), nbactions);
 
             // push this frame into the stack
-            stack.push (frame);
+            stack += frame;
 
             // and verify the size of the stack
             ASSERT_EQ (stack.size (), 1+j);
@@ -98,13 +98,13 @@ TEST_F (SstackFixture, UnwindSstack) {
             // all actions have the same lambda function which adds two numbers
             // and receives the arguments to add ---note the index is uselss in
             // this tests
-            frame0.push (action_t {[] (size_t index, size_t val1, size_t val2) {
+            frame0 += action_t {[] (size_t index, size_t val1, size_t val2) {
                 sum += (val1 + val2);
-            }, 0, size_t(ints[j*2]), size_t(ints[j*2+1])});
+            }, 0, size_t(ints[j*2]), size_t(ints[1+j*2])};
         }
 
         // push this frame onto the stack
-        stack.push (frame0);
+        stack += frame0;
 
         // ---Second frame
 
@@ -117,14 +117,14 @@ TEST_F (SstackFixture, UnwindSstack) {
             // all actions have the same lambda function which inserts two
             // numbers (in reversed order) in a vector and receives the
             // arguments to insert ---note the index is uselss in this tests
-            frame1.push (action_t {[] (size_t index, size_t val1, size_t val2) {
+            frame1 += action_t {[] (size_t index, size_t val1, size_t val2) {
                 stackContainer.push_back (val2);
                 stackContainer.push_back (val1);
-            }, 0, size_t(ints[j*2]), size_t(ints[j*2+1])});
+            }, 0, size_t(ints[j*2]), size_t(ints[1+j*2])};
         }
 
         // push this frame onto the stack
-        stack.push (frame1);
+        stack += frame1;
 
         // unwind the second frame (the one at the top) after clearing the
         // output container
@@ -141,8 +141,8 @@ TEST_F (SstackFixture, UnwindSstack) {
         stack.unwind ();
 
         // and verify the result is the expected one
-        auto rsum = accumulate(ints.begin(), ints.end(), 0);
-        ASSERT_EQ (sum, rsum);
+        ASSERT_EQ (sum,
+                   accumulate(ints.begin(), ints.end(), 0));
     }
 }
 

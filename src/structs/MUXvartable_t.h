@@ -145,13 +145,23 @@ class vartable_t {
         // it does not exist, an exception is thrown
         const size_t operator[] (const std::string& name) const;
 
+        // likewise, it is also possible to access the name of a variable by its
+        // location through the same operator. In case it does not exist, an
+        // exception is thrown
+        const variable_t& operator[] (const size_t i) const {
+            if (i >= _table.size ()) {
+                throw std::out_of_range ("[const variable_t& vartable_t::operator[size_t]] out of bounds");
+            }
+            return _table[i]._variable;
+        }
+
         // modifiers
 
         // add a new entry to the table of variables and return its index. The
         // only necessary information is the variable itself and the first and
         // last indices to the values of its domain
-        size_t add_entry (variable_t& variable,
-                          const size_t first, const size_t last);
+        size_t insert (variable_t& variable,
+                       const size_t first, const size_t last);
 
         // assign the index of one value in the domain of the a variable to it
         void assign (const size_t variable, const size_t value);
