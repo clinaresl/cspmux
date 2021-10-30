@@ -120,6 +120,27 @@ TEST_F (VartableFixture, LookupIndexVartable) {
     }
 }
 
+// Checks that registering variables with empty domains automatically raises an
+// exception
+// ----------------------------------------------------------------------------
+TEST_F (VartableFixture, EmptyDomainVartable) {
+
+    for (auto i = 0 ; i < NB_TESTS/100 ; i++) {
+
+        // create an empty table of CSP variables, i.e., with no values at all
+        vartable_t vartable;
+
+        // try to register a variable with an empty domain, i.e., where the last
+        // index is strictly less or equal than the first index, and verify an
+        // exception is thrown
+        variable_t var {randString (50)};
+        size_t first = rand () % (NB_VARIABLES * NB_VALUES);
+        size_t last = first - (rand () % NB_VALUES);
+        EXPECT_THROW (vartable.insert (var, first, last),
+                      invalid_argument);
+    }
+}
+
 // Checks that reinserting a second variable with an existing name automatically
 // raises an exception
 // ----------------------------------------------------------------------------

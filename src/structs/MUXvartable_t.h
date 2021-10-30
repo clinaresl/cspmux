@@ -159,7 +159,10 @@ class vartable_t {
 
         // add a new entry to the table of variables and return its index. The
         // only necessary information is the variable itself and the first and
-        // last indices to the values of its domain
+        // last indices to the values of its domain. In case
+        //
+        // In case the variable already exists or the domain is empty an
+        // exception israised
         size_t insert (variable_t& variable,
                        const size_t first, const size_t last);
 

@@ -17,6 +17,8 @@
 #include<ctime>
 #include<utility>
 
+#include <iostream>
+
 #include "gtest/gtest.h"
 
 #include "../TSTdefs.h"
@@ -38,19 +40,21 @@ class ManagerFixture : public ::testing::Test {
         }
 
         // return a randomly generated vector of strings and integer values to
-        // populate the domain of n variables. For each variable, the number of
-        // values generated is randomly selected in the interval [10, NB_VALUES]
-        // and the integer values are randomly selected in the interval [0,
-        // MAX_LENGTH]
+        // populate the domain of n variables named after the strings randomly
+        // selected. For each variable, the number of values generated is
+        // randomly selected in the interval [10, NB_VALUES] and the integer
+        // values are randomly selected in the interval [0, MAX_LENGTH]
         void randVarIntVals (int n, vector<string>& name, vector<vector<value_t<int>>>& values) {
 
             // first, randomly select a name for a variable
             name = randVectorString (n, 10);
 
             // and now randomly select integer values for the domain of each
-            // variable
+            // variable ensuring that no values are repeated in the same domain
             for (int i = 0 ; i < n ; i++) {
-                vector<int> raw_values = randVectorInt (10 + (rand () % (NB_VALUES-9)), MAX_LENGTH/1000);
+                vector<int> raw_values = randVectorInt (1 + (rand () % NB_VALUES),
+                                                        MAX_LENGTH/1000,
+                                                        true);
 
                 // and now transform these values into MUX values
                 vector<value_t<int>> ivalues;
@@ -72,9 +76,9 @@ class ManagerFixture : public ::testing::Test {
             name = randVectorString (n, 10);
 
             // and now randomly select integer values for the domain of each
-            // variable
+            // variable ensuring that no values are repeated in the same domain
             for (int i = 0 ; i < n ; i++) {
-                vector<string> raw_values = randVectorString (1+rand ()% NB_VALUES, 20);
+                vector<string> raw_values = randVectorString (1+rand ()% NB_VALUES, 20, true);
 
                 // and now transform these values into MUX values
                 vector<value_t<string>> ivalues;
@@ -98,7 +102,9 @@ class ManagerFixture : public ::testing::Test {
             // and now randomly select integer values for the domain of each
             // variable
             for (int i = 0 ; i < n ; i++) {
-                vector<time_t> raw_values = randVectorTime (1+rand ()% NB_VALUES, time (nullptr));
+                vector<time_t> raw_values = randVectorTime (1+rand ()% NB_VALUES,
+                                                            time (nullptr),
+                                                            true);
 
                 // and now transform these values into MUX values
                 vector<value_t<time_t>> ivalues;
@@ -108,6 +114,21 @@ class ManagerFixture : public ::testing::Test {
 
                 // and add the domain of the i-th variable
                 values.push_back (ivalues);
+            }
+        }
+
+        // add all variables to the specified manager named after the vector of
+        // strings with domains given in the matrix of values specified
+        template <typename T>
+        void addVariables (manager<T>& m,
+                           vector<string>& names, vector<vector<value_t<T>>>& values) {
+
+            // create variables with the information provided
+            for (int j = 0 ; j < names.size () ; j++) {
+
+                // add the i-th variable along with its domain
+                variable_t newvar = variable_t {names[j]};
+                m.add_variable (newvar, values[j]);
             }
         }
 
@@ -135,21 +156,17 @@ class ManagerFixture : public ::testing::Test {
         // return a pair with the first and last index to the values in the
         // domain of the i-th variable given a matrix of values
         template<typename T>
-        pair<int, int> get_bounds (size_t i, vector<vector<value_t<T>>>& values) {
+        pair<size_t, size_t> get_bounds (size_t i, vector<vector<value_t<T>>>& values) {
 
-            int first = 0, last;;
+            size_t first = 0;
 
             // add the number of items in the domain of each variable preceding
             // i by the size of the domain
-            for (auto idx = 0 ; idx < i ; idx++)
-                first += values[idx].size ();
+            for (auto idx = 0 ; idx < i ; first += values[idx++].size ());
 
-            // and now add the lenght of this domain to get the index to the
-            // last value
-            last = first + values[i].size ()-1;
-
+            // add the lenght of this domain to get the index to the last value,
             // and return the boundaries
-            return pair<int, int> {first, last};
+            return pair<size_t, size_t> {first, first + values[i].size ()-1};
         }
 };
 

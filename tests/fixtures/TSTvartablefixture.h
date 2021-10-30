@@ -56,7 +56,7 @@ class VartableFixture : public ::testing::Test {
             // randomly simulate the domain of each variable by picking up two
             // indices, the second being larger than the first. Generate as many
             // pairs as variables
-            indices = randVectorIntPair (n, MAX_LENGTH/1000, 1000);
+            indices = randVectorIntPair (n, NB_VARIABLES * NB_VALUES, NB_VALUES);
 
             // and now add these variables along with their domain to the table of
             // CSP variables

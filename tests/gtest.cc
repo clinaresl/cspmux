@@ -18,12 +18,12 @@ int main(int argc, char **argv)
 
     // Run specific tests only
     // testing::GTEST_FLAG(filter) = "ManagerFixture.UnwindFullAssignIntManager";
-    // testing::GTEST_FLAG(filter) = "SstackFixture.*";
+    testing::GTEST_FLAG(filter) = "ManagerFixture.MutexTimeManager";
 
     // Exclude specific tests
     //
     // Bitmaps and multibitmaps are not used anymore
-    testing::GTEST_FLAG(filter) = "-BitmapFixture.*:MultibitmapFixture.*";
+    // testing::GTEST_FLAG(filter) = "-BitmapFixture.*:MultibitmapFixture.*";
 
     // and run the selection of tests
     return RUN_ALL_TESTS();

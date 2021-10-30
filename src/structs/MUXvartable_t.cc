@@ -132,8 +132,19 @@ const size_t vartable_t::operator[] (const string& name) const {
 // add a new entry to the table of variables and return its index. The
 // only necessary information is the variable itself and the first and
 // last indices to the values of its domain
+//
+// In case the variable already exists or the domain is empty an exception is
+// raised
 size_t vartable_t::insert (variable_t& variable,
                            const size_t first, const size_t last) {
+
+    // Note there is no way here to verify the correctness of the domain given
+    // (because var tables have no access to values). All that is left is just
+    // to verify that the index is not empty. Importantly, the case first==last
+    // does not denote an empty domain, but a domain with just one value
+    if (last < first) {
+        throw invalid_argument ("[vartable_t::insert] Empty domain");
+    }
 
     // variables are identified by their name which has to be unique. Thus, make
     // sure this variable does not exist in this table
@@ -152,7 +163,7 @@ size_t vartable_t::insert (variable_t& variable,
 
     // now, in case this variable already exists, immediately raise an exception
     if (index != string::npos) {
-        throw runtime_error ("[vartable_t::add_entry] Duplicated variable");
+        throw runtime_error ("[vartable_t::insert] Duplicated variable");
     }
 
     // otherwise, return the location where this variable was stored

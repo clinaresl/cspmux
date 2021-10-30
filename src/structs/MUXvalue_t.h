@@ -26,12 +26,6 @@ class value_t {
 
     public:
 
-        // constraints are added as functions that take two variables as
-        // arguments and return a bool value representing whether a specific
-        // combination of values of those variables is feasible (true) or not
-        // (false)
-        typedef bool (constraintHandler) (T, T);
-
         // Default constructors are disabled
         value_t () = delete;
 
@@ -56,6 +50,10 @@ class value_t {
             return _value != right.get_value ();
         }
 
+        // Importantly, raw values have to provide the relational operator <
+        bool operator<(const value_t<T>& right) const {
+            return _value < right.get_value ();
+        }
 };
 
 #endif // _VALUE_T_H_

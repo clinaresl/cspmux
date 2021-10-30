@@ -14,6 +14,8 @@
 #ifndef _MUXMANAGER_H_
 #define _MUXMANAGER_H_
 
+#include<memory>
+#include<set>
 #include<string>
 #include<vector>
 
@@ -53,7 +55,7 @@ class manager {
         // Information about mutexes and whether some values are enabled or not is
         // stored in a multivector. Because multivectors can not be created by
         // default, they are stored as a pointer
-        multivector_t* _multivector;
+        unique_ptr<multivector_t> _multivector;
 
         // the following private function performs a binary search over the
         // table of variables to determine the variable a specific value belongs
@@ -97,30 +99,20 @@ class manager {
             _multivector { nullptr }
         {}
 
-        // Destructor
-        virtual ~manager () {
-
-            // in case a multivector has been created, make sure to deallocate
-            // the memory it was using
-            if (_multivector) {
-                delete _multivector;
-            }
-        }
-
         // Accessors
 
         // the following service is provided for testing purposes
-        valtable_t<T>& get_valtable () {
+        const valtable_t<T>& get_valtable () const {
             return _valtable;
         }
 
         // the following service is provided for testing purposes
-        vartable_t& get_vartable () {
+        const vartable_t& get_vartable () const {
             return _vartable;
         }
 
         // the following service is provided for testing purposes
-        multivector_t* get_multivector () {
+        const unique_ptr<multivector_t>& get_multivector () const {
             return _multivector;
         }
 
@@ -130,7 +122,7 @@ class manager {
 
             // first things first. If this index exceeds the table of values,
             // immediately raise an exception
-            if (value < 0 || value >= _valtable.size ()) {
+            if (value >= _valtable.size ()) {
                 throw out_of_range ("[manager::val_to_var] Out of bounds");
             }
 
@@ -143,7 +135,8 @@ class manager {
 
         // add_variable posts a new variable and its domain to the CSP manager.
         // The domain has to be given as a vector of values. Importantly,
-        // variables can not be added once constraints have been posted
+        // variables can not be added once constraints have been posted. Also,
+        // no value can be repeated in the domain of a variable.
         void add_variable (variable_t& variable,
                            vector<value_t<T>>& domain) {
 
@@ -165,11 +158,26 @@ class manager {
             // it serves as a token meaning "unitialized"
             size_t first = std::string::npos;
             size_t last;
+            set<value_t<T>> values;
             for (auto value : domain) {
 
+                // to ensure that no value in the domain is repeated, a set is
+                // used to remember those values already inserted and to look it
+                // up prior to new insertions
+                if (values.find (value) != values.end ()) {
+                    cout << " Domain: [";
+                    for (auto i = 0 ; i < domain.size (); i++) {
+                        cout << domain[i].get_value () << " ";
+                    }
+                    cout << "]" << endl;
+                    cout << " Value: " << value.get_value () << endl << endl;
+                    throw runtime_error ("[manager::addvariable_t] Repeated value in the domain of a variable");
+                }
+
                 // insert this item into the table of value, and record its
-                // index
+                // index. Remember it also to avoid duplicates
                 last = _valtable.insert(value);
+                values.insert (value);
 
                 // if this is the first insertion, then update the value of the
                 // first index
@@ -179,7 +187,6 @@ class manager {
             // next, add this variable to the table of CSP variables along with
             // the bounds of its domain
             _vartable.insert (variable, first, last);
-
         }
 
         // add_constraint invokes the function given in first place over all
@@ -195,7 +202,8 @@ class manager {
         // variables with different orderings, i.e., add_constraint (func, X1,
         // X2) and add_constraint (func, X2, X1) are strictly equivalent and
         // invoking both might cause unpredictable effects
-        void add_constraint (typename value_t<T>::constraintHandler* func,
+        template<typename Handler>
+        void add_constraint (Handler func,
                              const variable_t& var1, const variable_t& var2) {
 
 
@@ -217,7 +225,7 @@ class manager {
 
                 // the length of the multivector has to be strictly equal to the
                 // overall number of values registered in this manager
-                _multivector = new multivector_t (_valtable.size ());
+                _multivector = unique_ptr<multivector_t>{new multivector_t (_valtable.size ())};
             }
 
             // Now comes the fun: for all combination of values (a, b) in the
@@ -233,7 +241,7 @@ class manager {
 
                     // if the constraint returns false, then a mutex has been
                     // found
-                    if (!(*func) (_valtable.get_value(i).get_value (),
+                    if (!(func) (_valtable.get_value(i).get_value (),
                                   _valtable.get_value(j).get_value ())) {
 
                         // set this mutex in the multibitmap. Note this solver

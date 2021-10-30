@@ -14,8 +14,10 @@
 #ifndef _TSTHELPERS_H_
 #define _TSTHELPERS_H_
 
+#include<algorithm>
 #include<cstdlib>
 #include<ctime>
+#include<math.h>
 #include<set>
 #include<string>
 #include<utility>
@@ -31,15 +33,18 @@ std::string randString (int length, std::string exclude="");
 // increases
 std::set<int> randSetInt (int n, int m);
 
-// return a vector with n numbers randomly generated in the interval [0, m)
-std::vector<int> randVectorInt (int n, int m);
+// return a vector with n numbers randomly generated in the interval [0, m). If
+// remove_duplicates takes the value true, then no values are duplicated
+std::vector<int> randVectorInt (int n, int m, bool remove_duplicates=false);
 
-// return a vector with n strings randomly generated each with m chars
-std::vector<std::string> randVectorString (int n, int m);
+// return a vector with n strings randomly generated each with m chars. If
+// remove_duplicates takes the value true, then no values are duplicated
+std::vector<std::string> randVectorString (int n, int m, bool remove_duplicates=false);
 
 // return a vector with n times randomly generated in the interval [0, m), where
-// m is measured as the number of seconds elapsed since epoch
-std::vector<time_t> randVectorTime (int n, long long int m);
+// m is measured as the number of seconds elapsed since epoch. If
+// remove_duplicates takes the value true, then no values are duplicated
+std::vector<time_t> randVectorTime (int n, long long int m, bool remove_duplicates=false);
 
 // return a vector of n pairs of ints: the first element is randomly chosen in
 // the interval [0, m), and the second is randomly chosen in the interval [m,
