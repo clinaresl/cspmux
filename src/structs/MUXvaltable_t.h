@@ -36,7 +36,7 @@ class valtable_t {
             // number of enabled values that are threatening it
             value_t<U> _value;
             bool _status;
-            size_t _nbvalues;
+            size_t _nbmutexes;
 
             // Default constructors of entries are strictly forbidden
             _entry_t<U> () = delete;
@@ -53,14 +53,14 @@ class valtable_t {
             bool operator==(const _entry_t& right) const {
                 return _value == right._value &&
                     _status == right._status &&
-                    _nbvalues == right._nbvalues;
+                    _nbmutexes == right._nbmutexes;
             }
 
             // likewise, define whether they are different
             bool operator!=(const _entry_t& right) const {
                 return _value != right._value ||
                     _status != right._status ||
-                    _nbvalues != right._nbvalues;
+                    _nbmutexes != right._nbmutexes;
             }
         };
 
@@ -79,33 +79,33 @@ class valtable_t {
 
         // return the number of (feasible or enabled) mutex values associated to
         // a particular index
-        const size_t get_nbvalues (const size_t i) const {
+        const size_t get_nbmutexes (const size_t i) const {
 
             // first, make sure the index requested is within the size of this
             // table
             if (i >= _table.size ()) {
-                throw std::out_of_range ("[valtable_t::get_nbvalues] out of bounds");
+                throw std::out_of_range ("[valtable_t::get_nbmutexes] out of bounds");
             }
 
             // in case it is a correct index, return the number of mutex values
             // at that position
-            return _table[i]._nbvalues;
+            return _table[i]._nbmutexes;
         }
 
         // set the number of active mutexes of the i-th value. Return the number
         // of active mutexes written
-        const size_t set_nbvalues (const size_t i, const size_t nbvalues) {
+        const size_t set_nbmutexes (const size_t i, const size_t nbmutexes) {
 
             // first, make sure the index requested is within the size of this
             // table
             if (i >= _table.size ()) {
-                throw std::out_of_range ("[valtable::set_nbvalues] out of bounds");
+                throw std::out_of_range ("[valtable::set_nbmutexes] out of bounds");
             }
 
             // in case this is a correct operation, increment the number of
             // active mutexes by the given amount
-            _table[i]._nbvalues = nbvalues;
-            return _table[i]._nbvalues;
+            _table[i]._nbmutexes = nbmutexes;
+            return _table[i]._nbmutexes;
         }
 
         // return the status of the i-th value
@@ -166,7 +166,7 @@ class valtable_t {
 
             // verify now each entry independently
             for (auto i = 0 ; i < _table.size () ; i++) {
-                if (_table[i]._nbvalues != right.get_nbvalues (i) ||
+                if (_table[i]._nbmutexes != right.get_nbmutexes (i) ||
                     _table[i]._status != right.get_status (i) ||
                     _table[i]._value != right.get_value (i)) {
                     return false;
@@ -204,36 +204,36 @@ class valtable_t {
         // decrement the number of active mutexes of the i-th value by the given
         // delta. It returns the current number of plausible mutexes of this
         // entry after the update
-        const size_t decrement_nbvalues (const size_t i, const size_t delta=1) {
+        const size_t decrement_nbmutexes (const size_t i, const size_t delta=1) {
 
             // first, make sure the index requested is within the size of this
             // table, and that the value to decrement does not exceed the
             // current value
-            if (i >= _table.size () || delta > _table[i]._nbvalues) {
-                throw std::out_of_range ("[valtable::decrement_nbvalues] out of bounds");
+            if (i >= _table.size () || delta > _table[i]._nbmutexes) {
+                throw std::out_of_range ("[valtable::decrement_nbmutexes] out of bounds");
             }
 
             // in case this is a correct operation, decrement the number of
             // active mutexes by the given amount
-            _table[i]._nbvalues -= delta;
-            return _table[i]._nbvalues;
+            _table[i]._nbmutexes -= delta;
+            return _table[i]._nbmutexes;
         }
 
         // increment the number of plausible mutexes of the i-th value by the
         // given delta. It returns the current number of plausible mutexes of
         // this entry after the update
-        const size_t increment_nbvalues (const size_t i, const size_t delta=1) {
+        const size_t increment_nbmutexes (const size_t i, const size_t delta=1) {
 
             // first, make sure the index requested is within the size of this
             // table
             if (i >= _table.size ()) {
-                throw std::out_of_range ("[valtable::increment_nbvalues] out of bounds");
+                throw std::out_of_range ("[valtable::increment_nbmutexes] out of bounds");
             }
 
             // in case this is a correct operation, increment the number of
             // active mutexes by the given amount
-            _table[i]._nbvalues += delta;
-            return _table[i]._nbvalues;
+            _table[i]._nbmutexes += delta;
+            return _table[i]._nbmutexes;
         }
 
         // capacity

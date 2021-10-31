@@ -207,10 +207,10 @@ TEST_F(ValtableFixture, InsertTimeValues) {
     }
 }
 
-// Checks that updating the number of values of each entry of the table of
-// values correctly works
+// Checks that updating the number of threatening mutexes of each entry of the
+// table of values correctly works
 // ----------------------------------------------------------------------------
-TEST_F (ValtableFixture, SetNbValuesValtable) {
+TEST_F (ValtableFixture, SetNbMutexesValtable) {
 
     for (auto i = 0 ; i < NB_TESTS/1000 ; i++) {
 
@@ -223,27 +223,27 @@ TEST_F (ValtableFixture, SetNbValuesValtable) {
         // expected one
         ASSERT_EQ (valtable.size (), items.size ());
 
-        // now, randomly choose the number of values of each value of the table.
-        // Note that values have to be written prior to set their number of
-        // values
-        vector<int> nbvalues = randVectorInt (valtable.size (), MAX_LENGTH/1000);
+        // now, randomly choose the number of enabled mutexes of each value of
+        // the table. Note that values have to be written prior to set their
+        // number of values
+        vector<int> nbmutexes = randVectorInt (valtable.size (), MAX_LENGTH/1000);
 
         // and set all these numbers of values
         for (auto j = 0 ; j < valtable.size () ; j++) {
-            valtable.set_nbvalues(j, nbvalues[j]);
+            valtable.set_nbmutexes(j, nbmutexes[j]);
         }
 
         // and finally check that these numbers have been properly stored
         for (auto j = 0 ; j < items.size (); j++) {
-            ASSERT_EQ (valtable.get_nbvalues (j), nbvalues[j]);
+            ASSERT_EQ (valtable.get_nbmutexes (j), nbmutexes[j]);
         }
     }
 }
 
-// Checks that decrementing the number of values of each entry of the table of
-// values correctly works
+// Checks that decrementing the number of enabled mutexes of each entry of the
+// table of values correctly works
 // ----------------------------------------------------------------------------
-TEST_F (ValtableFixture, DecrementNbValuesValtable) {
+TEST_F (ValtableFixture, DecrementNbMutexesValtable) {
 
     for (auto i = 0 ; i < NB_TESTS/1000 ; i++) {
 
@@ -256,39 +256,39 @@ TEST_F (ValtableFixture, DecrementNbValuesValtable) {
         // expected one
         ASSERT_EQ (valtable.size (), items.size ());
 
-        // now, randomly choose the number of values of each value of the table.
-        // Note that values have to be written prior to set their number of
-        // values
-        vector<int> nbvalues = randVectorInt (valtable.size (), MAX_LENGTH/1000);
+        // now, randomly choose the number of enabled mutexes of each value of
+        // the table. Note that values have to be written prior to set their
+        // number of values
+        vector<int> nbmutexes = randVectorInt (valtable.size (), MAX_LENGTH/1000);
 
-        // and set all these numbers of values
+        // and set all these numbers of enabled mutexes
         for (auto j = 0 ; j < valtable.size () ; j++) {
 
-            // the number of values shall be strictly positive, so that when
-            // decrementing it an "out of bounds" exception is not thrown
-            valtable.set_nbvalues(j, 1+nbvalues[j]);
+            // the number of enabled mutexes shall be strictly positive, so that
+            // when decrementing it an "out of bounds" exception is not thrown
+            valtable.set_nbmutexes(j, 1+nbmutexes[j]);
         }
 
         // and decrement them all
         for (auto j = 0 ; j < valtable.size () ; j++) {
-            valtable.decrement_nbvalues(j);
+            valtable.decrement_nbmutexes(j);
         }
 
         // and check them all in a row
         for (auto j = 0 ; j < items.size (); j++) {
 
-            // because we inserted one value above the number randomly chosen
+            // because we inserted one mutex above the number randomly chosen
             // for each position and then we decremented, we should now get the
-            // same values originally chosen
-            ASSERT_EQ (valtable.get_nbvalues (j), nbvalues[j]);
+            // same number of enabled mutexes originally chosen
+            ASSERT_EQ (valtable.get_nbmutexes (j), nbmutexes[j]);
         }
     }
 }
 
-// Checks that incrementing the number of values of each entry of the table of
-// values correctly works
+// Checks that incrementing the number of enabled mutexes of each entry of the
+// table of values correctly works
 // ----------------------------------------------------------------------------
-TEST_F (ValtableFixture, IncrementNbValuesValtable) {
+TEST_F (ValtableFixture, IncrementNbMutexesValtable) {
 
     for (auto i = 0 ; i < NB_TESTS/1000 ; i++) {
 
@@ -301,24 +301,24 @@ TEST_F (ValtableFixture, IncrementNbValuesValtable) {
         // expected one
         ASSERT_EQ (valtable.size (), items.size ());
 
-        // now, randomly choose the number of values of each value of the table.
-        // Note that values have to be written prior to set their number of
-        // values
-        vector<int> nbvalues = randVectorInt (valtable.size (), MAX_LENGTH/1000);
+        // now, randomly choose the number of enabled mutexes of each value of
+        // the table. Note that values have to be written prior to set their
+        // number of values
+        vector<int> nbmutexes = randVectorInt (valtable.size (), MAX_LENGTH/1000);
 
-        // and set all these numbers of values
+        // and set all these numbers of enabled mutexes
         for (auto j = 0 ; j < valtable.size () ; j++) {
-            valtable.set_nbvalues(j, nbvalues[j]);
+            valtable.set_nbmutexes(j, nbmutexes[j]);
         }
 
         // and increment them all
         for (auto j = 0 ; j < valtable.size () ; j++) {
-            auto new_value = valtable.increment_nbvalues(j);
+            auto new_value = valtable.increment_nbmutexes(j);
         }
 
         // and check them all in a row
         for (auto j = 0 ; j < items.size (); j++) {
-            ASSERT_EQ (valtable.get_nbvalues (j), nbvalues[j]+1);
+            ASSERT_EQ (valtable.get_nbmutexes (j), nbmutexes[j]+1);
         }
     }
 }

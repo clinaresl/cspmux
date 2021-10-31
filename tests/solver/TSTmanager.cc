@@ -312,7 +312,7 @@ TEST_F (ManagerFixture, NbEnabledMutexesManager) {
         // before moving further, make sure that the number of enabled mutexes
         // of all values is exactly 0
         for (int j = 0 ; j < valtable.size () ; j++) {
-            ASSERT_EQ (valtable.get_nbvalues (j), 0);
+            ASSERT_EQ (valtable.get_nbmutexes (j), 0);
         }
 
         // randomly choose two different variables (which could be the same ...)
@@ -340,7 +340,7 @@ TEST_F (ManagerFixture, NbEnabledMutexesManager) {
         // mutexes stored in each value
         const unique_ptr<multivector_t>& multivector = m.get_multivector ();
         for (size_t j = 0 ; j < valtable.size () ; j++) {
-            ASSERT_EQ ((*multivector)[j].size (), valtable.get_nbvalues (j));
+            ASSERT_EQ ((*multivector)[j].size (), valtable.get_nbmutexes (j));
         }
     }
 }
@@ -447,7 +447,7 @@ TEST_F (ManagerFixture, InvokeConstraintIntManager) {
         addVariables<int>(m, names, values);
 
         // randomly choose two different variables (which could be the same ...)
-        auto variables = randVectorInt (2, nbvars);
+        auto variables = randVectorInt (2, nbvars, true);
 
         // Add now a constraint (in the form of a lambda function) which stores
         // all combinations of values as pairs
@@ -661,7 +661,7 @@ TEST_F (ManagerFixture, InvokeConstraintStringManager) {
         addVariables<string>(m, names, values);
 
         // randomly choose two different variables (which could be the same ...)
-        auto variables = randVectorInt (2, nbvars);
+        auto variables = randVectorInt (2, nbvars, true);
 
         // Add now a constraint (in the form of a lambda function) which stores
         // all combinations of values as pairs
@@ -863,7 +863,7 @@ TEST_F (ManagerFixture, InvokeConstraintTimeManager) {
         addVariables<time_t>(m, names, values);
 
         // randomly choose two different variables (which could be the same ...)
-        auto variables = randVectorInt (2, nbvars);
+        auto variables = randVectorInt (2, nbvars, true);
 
         // Add now a constraint (in the form of a lambda function) which stores
         // all combinations of values as pairs
@@ -963,291 +963,263 @@ TEST_F (ManagerFixture, MutexTimeManager) {
     }
 }
 
-// manager<int> mVarNbValues;
-// void handler_var_nbvalues (size_t index, size_t val1, size_t val2) {
-//     mVarNbValues.set_var_nbvalues (index, val1, val2);
-// }
-
-// // Check that restoring the number of values in the domain of a variable works
-// // correctly
-// // ----------------------------------------------------------------------------
-// TEST_F (ManagerFixture, RestoreVariableNbvaluesManager) {
-
-//     // first, update the manager with variables and values
-
-//     // randomly pick up information for the variables to insert
-//     vector<string> names;
-//     vector<vector<value_t<int>>> values;
-//     randVarIntVals (NB_VARIABLES/10, names, values);
-
-//     // now, insert all these variables
-//     for (int j = 0 ; j < NB_VARIABLES/10 ; j++) {
-
-//         // add the i-th variable along with its domain
-//         mVarNbValues.add_variable (variable_t (names[j]), values[j]);
-//     }
-
-//     // now, performe the tests
-//     for (auto i = 0 ; i < NB_TESTS ; i++) {
-
-//         // create an empty stack
-//         sstack_t stack;
-
-//         // randomly choose one variable to update and the new value
-//         size_t variable = rand () % (NB_VARIABLES/10);
-//         size_t last = rand () % NB_VALUES;
-
-//         // and make a backup copy of the number of values in the domain of the
-//         // selected variable
-//         size_t prev = mVarNbValues.get_vartable ().get_nbvalues (variable);
-
-//         // first, create an empty frame
-//         frame_t frame;
-
-//         // now, create an action to restore the value of the number of values in
-//         // the domain of the selected variable before updating it
-//         action_t action {handler_var_nbvalues,
-//             variable,
-//             prev,
-//             last};
-//         frame.push (action);
-
-//         // Update the number of feasible values. For this, use the handler
-//         // defined above but reversing the arguments
-//         handler_var_nbvalues (variable, last, prev);
-
-//         // verify that the table of variables has been properly updated
-//         ASSERT_EQ (mVarNbValues.get_vartable().get_nbvalues(variable), last);
-
-//         // push the frame onto the stack, verify it has indeed one frame, and
-//         // immediately after unwind it
-//         stack.push (frame);
-//         ASSERT_EQ (stack.size (), 1);
-//         stack.unwind ();
-
-//         // and now check the number of values in the domain of this variable has
-//         // been restored to the previous one, and that the stack is empty now
-//         ASSERT_EQ (mVarNbValues.get_vartable ().get_nbvalues (variable), prev);
-//         ASSERT_EQ (stack.size (), 0);
-//     }
-// }
-
-// manager<int> mValue;
-// void handler_var_value (size_t index, size_t val1, size_t val2) {
-//     mValue.set_var_value (index, val1, val2);
-// }
-
-// // Check that restoring the number of values in the domain of a variable works
-// // correctly
-// // ----------------------------------------------------------------------------
-// TEST_F (ManagerFixture, RestoreVariableValueManager) {
-
-//     // first, update the manager with variables and values
-
-//     // randomly pick up information for the variables to insert
-//     vector<string> names;
-//     vector<vector<value_t<int>>> values;
-//     randVarIntVals (NB_VARIABLES/10, names, values);
-
-//     // now, insert all these variables
-//     for (int j = 0 ; j < NB_VARIABLES/10 ; j++) {
-
-//         // add the i-th variable along with its domain
-//         mValue.add_variable (variable_t (names[j]), values[j]);
-//     }
-
-//     // now, performe the tests
-//     for (auto i = 0 ; i < NB_TESTS ; i++) {
-
-//         // create an empty stack
-//         sstack_t stack;
-
-//         // randomly choose one variable to update and the new value
-//         size_t variable = rand () % (NB_VARIABLES/10);
-//         size_t last = rand () % NB_VALUES;
-
-//         // and make a backup copy of the current value of the selected variable
-//         size_t prev = mValue.get_vartable ().get_value (variable);
-
-//         // first, create an empty frame
-//         frame_t frame;
-
-//         // now, create an action to restore the value of the selected variable
-//         // before updating it
-//         action_t action {handler_var_value,
-//             variable,
-//             prev,
-//             last};
-//         frame.push (action);
-
-//         // Update the value of this variable. For this, use the handler defined
-//         // above but reversing the arguments
-//         handler_var_value (variable, last, prev);
-
-//         // verify that the table of variables has been properly updated
-//         ASSERT_EQ (mValue.get_vartable().get_value(variable), last);
-
-//         // push the frame onto the stack, verify it has indeed one frame, and
-//         // immediately after unwind it
-//         stack.push (frame);
-//         ASSERT_EQ (stack.size (), 1);
-//         stack.unwind ();
-
-//         // and now check the value assigned to this variable has been restored
-//         // to the previous one, and that the stack is empty now
-//         ASSERT_EQ (mValue.get_vartable ().get_value (variable), prev);
-//         ASSERT_EQ (stack.size (), 0);
-//     }
-// }
-
-// manager<int> mStatus;
-// void handler_val_status (size_t index, size_t val1, size_t val2) {
-//     mStatus.set_val_status (index, val1, val2);
-// }
-
-// // Check that restoring the number of values in the domain of a variable works
-// // correctly
-// // ----------------------------------------------------------------------------
-// TEST_F (ManagerFixture, RestoreValueStatusManager) {
-
-//     // first, update the manager with variables and values
-
-//     // randomly pick up information for the variables to insert
-//     vector<string> names;
-//     vector<vector<value_t<int>>> values;
-//     randVarIntVals (NB_VARIABLES/10, names, values);
-
-//     // now, insert all these variables
-//     for (int j = 0 ; j < NB_VARIABLES/10 ; j++) {
-
-//         // add the i-th variable along with its domain
-//         mStatus.add_variable (variable_t (names[j]), values[j]);
-//     }
-
-//     // for the table of values to be initialized it is mandatory to post
-//     // constraints. The following post a dummy constraint to the first two
-//     // variables
-//     mStatus.add_constraint([] (int val1, int val2) {
-//         return true;
-//     }, variable_t{names[0]}, variable_t{names[1]});
-//     ASSERT_NE (mStatus.get_multivector (), nullptr);
-
-//     // now, performe the tests
-//     for (auto i = 0 ; i < NB_TESTS ; i++) {
-
-//         // create an empty stack
-//         sstack_t stack;
-
-//         // randomly choose one value to update and the new status
-//         size_t value = rand () % mStatus.get_multivector ()->size ();
-//         size_t last = 0;
-
-//         // and make a backup copy of the current status of the selected value
-//         size_t prev = mStatus.get_multivector ()->get_status (value);
-
-//         // in passing ensure that all values are enabled by default
-//         ASSERT_EQ (prev, 1);
-
-//         // first, create an empty frame
-//         frame_t frame;
-
-//         // now, create an action to restore the status of the selected value
-//         // before updating it
-//         action_t action {handler_val_status,
-//             value,
-//             prev,
-//             last};
-//         frame.push (action);
-
-//         // Update the status of this value. For this, use the handler defined
-//         // above but reversing the arguments
-//         handler_val_status (value, last, prev);
-
-//         // verify that the table of variables has been properly updated
-//         ASSERT_EQ (mStatus.get_multivector()->get_status(value), last);
-
-//         // push the frame onto the stack, verify it has indeed one frame, and
-//         // immediately after unwind it
-//         stack.push (frame);
-//         ASSERT_EQ (stack.size (), 1);
-//         stack.unwind ();
-
-//         // and now check the status of this value has been restored to the
-//         // previous one, and that the stack is empty now
-//         ASSERT_EQ (mStatus.get_multivector ()->get_status (value), prev);
-//         ASSERT_EQ (stack.size (), 0);
-//     }
-// }
-
-// manager<int> mValNbValues;
-// void handler_val_nbvalues (size_t index, size_t val1, size_t val2) {
-//     mValNbValues.set_val_nbvalues (index, val1, val2);
-// }
-
-// // Check that restoring the number of feasible values of one variable works
-// // correctly
-// // ----------------------------------------------------------------------------
-// TEST_F (ManagerFixture, RestoreValueNbvaluesManager) {
-
-//     // first, update the manager with variables and values
-
-//     // randomly pick up information for the variables to insert
-//     vector<string> names;
-//     vector<vector<value_t<int>>> values;
-//     randVarIntVals (NB_VARIABLES/10, names, values);
-
-//     // now, insert all these variables
-//     for (int j = 0 ; j < NB_VARIABLES/10 ; j++) {
-
-//         // add the i-th variable along with its domain
-//         mValNbValues.add_variable (variable_t (names[j]), values[j]);
-//     }
-
-//     // now, performe the tests
-//     for (auto i = 0 ; i < NB_TESTS ; i++) {
-
-//         // create an empty stack
-//         sstack_t stack;
-
-//         // randomly choose one value to update and the new number of feasible mutexes
-//         size_t value = rand () % (mValNbValues.get_valtable ().size ());
-//         size_t last = rand () % NB_VALUES;
-
-//         // and make a backup copy of the number of feasible mutexes of this
-//         // value
-//         size_t prev = mValNbValues.get_valtable ().get_nbvalues (value);
-
-//         // first, create an empty frame
-//         frame_t frame;
-
-//         // now, create an action to restore the number of feasible mutexes of
-//         // the selected value before updating it
-//         action_t action {handler_val_nbvalues,
-//             value,
-//             prev,
-//             last};
-//         frame.push (action);
-
-//         // Update the number of feasible mutexes of this value. For this, use
-//         // the handler defined above but reversing the arguments
-//         handler_val_nbvalues (value, last, prev);
-
-//         // verify that the table of values has been properly updated
-//         ASSERT_EQ (mValNbValues.get_valtable ().get_nbvalues (value), last);
-
-//         // push the frame onto the stack, verify it has indeed one frame, and
-//         // immediately after unwind it
-//         stack.push (frame);
-//         ASSERT_EQ (stack.size (), 1);
-//         stack.unwind ();
-
-//         // and now check the number of feasible mutexes of the selected value
-//         // has been restored to the previous one, and that the stack is empty
-//         // now
-//         ASSERT_EQ (mValNbValues.get_valtable ().get_nbvalues (value), prev);
-//         ASSERT_EQ (stack.size (), 0);
-//     }
-// }
+manager<int> mVarNbValues;
+void handler_var_nbvalues (size_t index, size_t val1, size_t val2) {
+    mVarNbValues.set_var_nbvalues (index, val1, val2);
+}
+
+// Check that restoring the number of values in the domain of a variable works
+// correctly
+// ----------------------------------------------------------------------------
+TEST_F (ManagerFixture, RestoreVariableNbvaluesManager) {
+
+    // randomly pick up information for all variables to insert. The number of
+    // variables to insert is randomly selected and it is guaranteed to be at
+    // least a hundred
+    vector<string> names;
+    vector<vector<value_t<int>>> values;
+    int nbvars = 100 + rand () % NB_VARIABLES;
+    randVarIntVals (nbvars, names, values);
+
+    // and add all these variables to the manager
+    addVariables<int>(mVarNbValues, names, values);
+
+    // now, performe the tests
+    for (auto j = 0 ; j < NB_TESTS ; j++) {
+
+        // create an empty stack
+        sstack_t stack;
+
+        // randomly choose one variable to update and the new value
+        size_t variable = rand () % nbvars;
+        size_t last = rand () % NB_VALUES;
+
+        // make a backup copy of the number of values in the domain of the
+        // selected variable
+        size_t prev = mVarNbValues.get_vartable ().get_nbvalues (variable);
+
+        // create a frame which will hold a single action used to restore
+        // the number of values in the domain of the selected variable
+        frame_t frame;
+        frame += action_t{handler_var_nbvalues, variable, prev, last};
+
+        // Update the number of feasible values
+        mVarNbValues.set_var_nbvalues (variable, last, prev);
+
+        // verify that the table of variables has been properly updated
+        ASSERT_EQ (mVarNbValues.get_vartable().get_nbvalues(variable), last);
+
+        // push the frame onto the stack, verify it has indeed one frame, and
+        // immediately after unwind it
+        stack += frame;
+        ASSERT_EQ (stack.size (), 1);
+        stack.unwind ();
+
+        // and now check the number of values in the domain of this variable has
+        // been restored to the previous one, and that the stack is empty now
+        ASSERT_EQ (mVarNbValues.get_vartable ().get_nbvalues (variable), prev);
+        ASSERT_EQ (stack.size (), 0);
+    }
+}
+
+
+manager<int> mValue;
+void handler_var_value (size_t index, size_t val1, size_t val2) {
+    mValue.set_var_value (index, val1, val2);
+}
+
+// Check that restoring the value of a variable works correctly
+// ----------------------------------------------------------------------------
+TEST_F (ManagerFixture, RestoreVariableValueManager) {
+
+    // randomly pick up information for all variables to insert. The number of
+    // variables to insert is randomly selected and it is guaranteed to be at
+    // least a hundred
+    vector<string> names;
+    vector<vector<value_t<int>>> values;
+    int nbvars = 100 + rand () % NB_VARIABLES;
+    randVarIntVals (nbvars, names, values);
+
+    // and add all these variables to the manager
+    addVariables<int>(mValue, names, values);
+
+    // now, performe the tests
+    for (auto j = 0 ; j < NB_TESTS ; j++) {
+
+        // create an empty stack
+        sstack_t stack;
+
+        // randomly choose one variable to update and the new value
+        size_t variable = rand () % nbvars;
+        size_t last = rand () % NB_VALUES;
+
+        // make a backup copy of the current value of the selected variable
+        size_t prev = mValue.get_vartable ().get_value (variable);
+
+        // create a frame which will hold a single action used to restore the
+        // value of the selected variable
+        frame_t frame;
+        frame += action_t{handler_var_value, variable, prev, last};
+
+        // Update the value of this variable
+        mValue.set_var_value (variable, last, prev);
+
+        // verify that the table of variables has been properly updated
+        ASSERT_EQ (mValue.get_vartable().get_value(variable), last);
+
+        // push the frame onto the stack, verify it has indeed one frame, and
+        // immediately after unwind it
+        stack +=frame;
+        ASSERT_EQ (stack.size (), 1);
+        stack.unwind ();
+
+        // and now check the value assigned to this variable has been restored
+        // to the previous one, and that the stack is empty now
+        ASSERT_EQ (mValue.get_vartable ().get_value (variable), prev);
+        ASSERT_EQ (stack.size (), 0);
+    }
+}
+
+manager<int> mStatus;
+void handler_val_status (size_t index, size_t val1, size_t val2) {
+    mStatus.set_val_status (index, val1, val2);
+}
+
+// Check that restoring the number of values in the domain of a variable works
+// correctly
+// ----------------------------------------------------------------------------
+TEST_F (ManagerFixture, RestoreValueStatusManager) {
+
+    // randomly pick up information for all variables to insert. The number of
+    // variables to insert is randomly selected and it is guaranteed to be at
+    // least a hundred
+    vector<string> names;
+    vector<vector<value_t<int>>> values;
+    int nbvars = 100 + rand () % NB_VARIABLES;
+    randVarIntVals (nbvars, names, values);
+
+    // and add all these variables to the manager
+    addVariables<int>(mStatus, names, values);
+
+    // randomly choose two different variables
+    auto variables = randVectorInt (2, nbvars, true);
+
+    // for the table of values to be initialized it is mandatory to post
+    // constraints over two variables randomly selected
+    mStatus.add_constraint([] (int val1, int val2)->bool {
+        return val1 < val2;
+    }, variable_t{names[variables[0]]}, variable_t{names[variables[1]]});
+    ASSERT_NE (mStatus.get_multivector (), nullptr);
+
+    // now, performe the tests
+    for (auto j = 0 ; j < NB_TESTS ; j++) {
+
+        // create an empty stack
+        sstack_t stack;
+
+        // randomly choose one value to update and the new status
+        size_t value = rand () % mStatus.get_multivector ()->size ();
+        size_t last = rand () % 2;
+
+        // make a backup copy of the current status of the selected value, which
+        // should be enabled by default
+        size_t prev = mStatus.get_valtable ().get_status (value);
+        ASSERT_EQ (prev, 1);
+
+        // create a frame which will hold a single action used to restore the
+        // status of the value randomly selected
+        frame_t frame;
+        frame += action_t {handler_val_status, value, prev, last};
+
+        // Update the status of this value. For this, use the handler defined
+        // above but reversing the arguments
+        mStatus.set_val_status (value, last, prev);
+
+        // verify that the table of variables has been properly updated
+        ASSERT_EQ (mStatus.get_valtable ().get_status(value), last);
+
+        // push the frame onto the stack, verify it has indeed one frame, and
+        // immediately after unwind it
+        stack += frame;
+        ASSERT_EQ (stack.size (), 1);
+        stack.unwind ();
+
+        // and now check the status of this value has been restored to the
+        // previous one, and that the stack is empty now
+        ASSERT_EQ (mStatus.get_valtable ().get_status (value), prev);
+        ASSERT_EQ (stack.size (), 0);
+    }
+}
+
+manager<int> mValNbMutexes;
+void handler_val_nbvalues (size_t index, size_t val1, size_t val2) {
+    mValNbMutexes.set_val_nbmutexes (index, val1, val2);
+}
+
+// Check that restoring the number of active mutexes threating a single value
+// works correctly
+// ----------------------------------------------------------------------------
+TEST_F (ManagerFixture, RestoreValueNbMutexesManager) {
+
+    // randomly pick up information for all variables to insert. The number of
+    // variables to insert is randomly selected and it is guaranteed to be at
+    // least a hundred
+    vector<string> names;
+    vector<vector<value_t<int>>> values;
+    int nbvars = 100 + rand () % NB_VARIABLES;
+    randVarIntVals (nbvars, names, values);
+
+    // and add all these variables to the manager
+    addVariables<int>(mValNbMutexes, names, values);
+
+    // randomly choose two different variables
+    auto variables = randVectorInt (2, nbvars, true);
+
+    // for the table of values to be initialized it is mandatory to post
+    // constraints over two variables randomly selected
+    mValNbMutexes.add_constraint([] (int val1, int val2)->bool {
+        return val1 < val2;
+    }, variable_t{names[variables[0]]}, variable_t{names[variables[1]]});
+    ASSERT_NE (mValNbMutexes.get_multivector (), nullptr);
+
+    // now, performe the tests
+    for (auto j = 0 ; j < NB_TESTS ; j++) {
+
+        // create an empty stack
+        sstack_t stack;
+
+        // randomly choose one value to update and the new number of mutexes
+        size_t value = rand () % (mValNbMutexes.get_valtable ().size ());
+        size_t last = rand () % NB_VALUES;
+
+        // and make a backup copy of the number of feasible mutexes of this
+        // value
+        size_t prev = mValNbMutexes.get_valtable ().get_nbmutexes (value);
+
+        // create a frame which will hold a single action used to restore the
+        // number of feasible mutexes of the value randomly selected
+        frame_t frame;
+        frame += action_t {handler_val_nbvalues, value, prev, last};
+
+        // Update the number of feasible mutexes of this value
+        mValNbMutexes.set_val_nbmutexes (value, last, prev);
+
+        // verify that the table of values has been properly updated
+        ASSERT_EQ (mValNbMutexes.get_valtable ().get_nbmutexes (value), last);
+
+        // push the frame onto the stack, verify it has indeed one frame, and
+        // immediately after unwind it
+        stack +=frame;
+        ASSERT_EQ (stack.size (), 1);
+        stack.unwind ();
+
+        // and now check the number of feasible mutexes of the selected value
+        // has been restored to the previous one, and that the stack is empty
+        // now
+        ASSERT_EQ (mValNbMutexes.get_valtable ().get_nbmutexes (value), prev);
+        ASSERT_EQ (stack.size (), 0);
+    }
+}
 
 // manager<int> mFullAssignment;
 // void handler_var_value_fullassignment (size_t index, size_t val1, size_t val2) {
@@ -1366,7 +1338,7 @@ TEST_F (ManagerFixture, MutexTimeManager) {
 //             }
 //         }
 //         ASSERT_EQ ((*multivector)[last].size (),
-//                    mFullAssignment.get_valtable().get_nbvalues (last));
+//                    mFullAssignment.get_valtable().get_nbmutexes (last));
 //         ASSERT_TRUE ((*multivector)[last].size () > 0);
 
 //         // count the number of values whose number of enabled mutexes has been
@@ -1434,14 +1406,14 @@ TEST_F (ManagerFixture, MutexTimeManager) {
 
 //                 // make a backup copy of the current number of enabled mutexes
 //                 // of the value mvalue
-//                 size_t current_nbvalue = mFullAssignment.get_valtable ().get_nbvalues (jvalue);
+//                 size_t current_nbvalue = mFullAssignment.get_valtable ().get_nbmutexes (jvalue);
 
 //                 // create an action which restores the current number of enabled
 //                 // values
 //                 action_t nbvalues_action (handler_val_nbvalues_fullassignment,
 //                                           size_t (jvalue),
-//                                           mFullAssignment.get_valtable ().get_nbvalues (jvalue),
-//                                           mFullAssignment.get_valtable ().get_nbvalues (jvalue) - 1);
+//                                           mFullAssignment.get_valtable ().get_nbmutexes (jvalue),
+//                                           mFullAssignment.get_valtable ().get_nbmutexes (jvalue) - 1);
 //                 frame.push (nbvalues_action);
 
 //                 // decrement the number of enabled mutexes of one value which is
@@ -1449,7 +1421,7 @@ TEST_F (ManagerFixture, MutexTimeManager) {
 //                 mFullAssignment.get_valtable ().decrement_nbvalues (jvalue);
 
 //                 // verify the number of enabled mutexes has been updated
-//                 ASSERT_EQ (mFullAssignment.get_valtable ().get_nbvalues (jvalue),
+//                 ASSERT_EQ (mFullAssignment.get_valtable ().get_nbmutexes (jvalue),
 //                            current_nbvalue-1);
 
 //                 // and increment the number of values whose number of enabled
@@ -1517,7 +1489,7 @@ TEST_F (ManagerFixture, MutexTimeManager) {
 //             // and now verify also that the number of enabled mutexes of those
 //             // values which are mutex with mvalue has been restored as well
 //             for (auto jvalue : (*multivector)[mvalue]) {
-//                 ASSERT_EQ (mFullAssignment.get_valtable ().get_nbvalues (jvalue),
+//                 ASSERT_EQ (mFullAssignment.get_valtable ().get_nbmutexes (jvalue),
 //                            valtableFullAssignment.get_nbvalues (jvalue));
 //             }
 //         }

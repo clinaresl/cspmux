@@ -40,7 +40,7 @@ class action_t {
         action_t () = delete;
 
         // Explicit constructor
-        action_t (stackHandler* func, size_t index, size_t prev, size_t next) :
+        action_t (stackHandler* func, const size_t index, const size_t prev, const size_t next) :
             _func { func },
             _index {index },
             _prev { prev },

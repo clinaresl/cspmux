@@ -256,8 +256,8 @@ class manager {
                         // WARNING! adding constraints again over the same set
                         // of variables previously used but with different
                         // orderings would cause unpredictable effects!
-                        _valtable.increment_nbvalues (i);
-                        _valtable.increment_nbvalues (j);
+                        _valtable.increment_nbmutexes (i);
+                        _valtable.increment_nbmutexes (j);
                     }
                 }
             }
@@ -319,16 +319,16 @@ class manager {
         // value to update, the previous number of feasible mutexes, and the
         // last one. In case its current number of feasible values is not the
         // last one, then an exception is immediately raised
-        void set_val_nbvalues (size_t i, size_t prev, size_t last) {
+        void set_val_nbmutexes (size_t i, size_t prev, size_t last) {
 
             // check the current number of feasible values is the one assigned
             // last
-            if (_valtable.get_nbvalues (i) != last) {
+            if (_valtable.get_nbmutexes (i) != last) {
                 throw runtime_error ("[manager::set_val_nbvalues] Inconsistency found!");
             }
 
             // and now update it
-            _valtable.set_nbvalues (i, prev);
+            _valtable.set_nbmutexes (i, prev);
         }
 };
 
