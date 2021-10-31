@@ -59,7 +59,7 @@ class ManagerFixture : public ::testing::Test {
                 // and now transform these values into MUX values
                 vector<value_t<int>> ivalues;
                 for (auto value : raw_values) {
-                    ivalues.push_back (value_t<int>(value));
+                    ivalues.push_back (value_t<int>{value});
                 }
 
                 // and add the domain of the i-th variable

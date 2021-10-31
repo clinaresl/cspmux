@@ -20,31 +20,22 @@
 map<int, function<bool (const time_t, const time_t)>> tfuncs = {
 
 // Less than
-{0, [] (const time_t val1, const time_t val2)->bool { return difftime (val2, val1) >  1.0;}},
+{0, [] (const time_t val1, const time_t val2)->bool { return difftime (val2, val1) >  0.0;}},
 
 // Less or equal than
-{1, [] (const time_t val1, const time_t val2)->bool { return difftime (val2, val1) >= 1.0;}},
+{1, [] (const time_t val1, const time_t val2)->bool { return difftime (val2, val1) >= 0.0;}},
 
 // Not equal to
-{2, [] (const time_t val1, const time_t val2)->bool { return fabs(difftime (val2, val1)) > 1.0;}},
+{2, [] (const time_t val1, const time_t val2)->bool { return difftime (val2, val1) != 0.0;}},
 
 // Equal to
-{3, [] (const time_t val1, const time_t val2)->bool { return fabs(difftime (val2, val1)) <= 1.0;}},
+{3, [] (const time_t val1, const time_t val2)->bool { return difftime (val2, val1) == 0.0;}},
 
 // Greater or equal than
-{4, [] (const time_t val1, const time_t val2)->bool { return difftime (val2, val1) <= -1.0;}},
+{4, [] (const time_t val1, const time_t val2)->bool { return difftime (val2, val1) <= 0.0;}},
 
 // Greater than
-{5, [] (const time_t val1, const time_t val2)->bool { return difftime (val2, val1) <  -1.0;}},
-};
-
-map<int, string> trels = {
-{0, "<"},
-{1, "<="},
-{2, "!="},
-{3, "=="},
-{4, ">="},
-{5, ">"}
+{5, [] (const time_t val1, const time_t val2)->bool { return difftime (val2, val1) <  0.0;}},
 };
 
 // Checks the creation of a manager creates empty tables and multivector
@@ -69,7 +60,7 @@ TEST_F (ManagerFixture, EmptyManager) {
 // ----------------------------------------------------------------------------
 TEST_F (ManagerFixture, AddVariablesManager) {
 
-    for (auto i = 0 ; i < NB_TESTS/1000 ; i++) {
+    for (auto i = 0 ; i < NB_TESTS/100 ; i++) {
 
         // create a manager
         manager<int> m;
@@ -127,7 +118,7 @@ TEST_F (ManagerFixture, AddVariablesManager) {
 // ----------------------------------------------------------------------------
 TEST_F (ManagerFixture, ContiguousDomainsManager) {
 
-    for (auto i = 0 ; i < NB_TESTS/1000 ; i++) {
+    for (auto i = 0 ; i < NB_TESTS/100 ; i++) {
 
         // create an empty table of CSP variables, i.e., with no values at all
         manager<int> m;
@@ -354,6 +345,84 @@ TEST_F (ManagerFixture, NbEnabledMutexesManager) {
     }
 }
 
+// Check that mutexes can not be defined over the same variable, i.e., func (Xi,
+// Xi) raises an exception
+// ----------------------------------------------------------------------------
+TEST_F (ManagerFixture, ReflexiveMutexIntManager) {
+
+    for (auto i = 0 ; i < NB_TESTS/100; i++) {
+
+        // create an empty table of CSP variables, i.e., with no values at all
+        manager<int> m;
+
+        // randomly pick up information for all variables to insert. The number
+        // of variables to insert is randomly selected and it is guaranteed, at
+        // least one is recorded
+        vector<string> names;
+        vector<vector<value_t<int>>> values;
+        int nbvars = 1 + rand () % NB_VARIABLES;
+        randVarIntVals (nbvars, names, values);
+
+        // and add all these variables to the manager
+        addVariables<int>(m, names, values);
+
+        // randomly pick up a variable
+        auto variable = rand () % nbvars;
+
+        // and now, verify that invoking a mutex over the same variable
+        // immediately generates an exception. The lambda function is
+        // irrelevant, but a non-commutative function is intentionally used to
+        // provide information about the problem with reflexive mutexes
+        ASSERT_THROW (m.add_constraint ([] (int val1, int val2)->bool {
+            return val1 < val2;}, variable_t{names[variable]}, variable_t{names[variable]}),
+            invalid_argument);
+    }
+}
+
+// Checks that domains are properly initialized with the same values given when
+// variables are registered and precisely the same order
+// ----------------------------------------------------------------------------
+TEST_F (ManagerFixture, CheckDomainIntManager) {
+
+    for (auto i = 0 ; i < NB_TESTS/100 ; i++) {
+
+        // create an empty table of CSP variables, i.e., with no values at all
+        manager<int> m;
+
+        // randomly pick up information for all variables to insert. The number
+        // of variables to insert is randomly selected and it is guaranteed, at
+        // least one is recorded
+        vector<string> names;
+        vector<vector<value_t<int>>> values;
+        int nbvars = 1 + rand () % NB_VARIABLES;
+        randVarIntVals (nbvars, names, values);
+
+        // and add all these variables to the manager
+        addVariables<int>(m, names, values);
+
+        // gain access to the var and valtables
+        const valtable_t<int>& valtable = m.get_valtable();
+        const vartable_t& vartable = m.get_vartable();
+
+        // verify the domain of all variables. All values should be registered
+        // in the vartable in the same order they were given in the domain and
+        // variables should be registered in the same order they were given
+        for (int j = 0 ; j < nbvars ; j++) {
+
+            // verify the number of values registered in the vartable equals the
+            // size of each domain
+            ASSERT_EQ (1 + vartable.get_last (j) - vartable.get_first (j),
+                       values[j].size ());
+
+            // for each index in the domain of the j-th variable
+            for (size_t idx = vartable.get_first (j); idx <= vartable.get_last (j); idx++) {
+
+                // verify the values are strictly the same
+                ASSERT_EQ (values[j][idx-vartable.get_first (j)], valtable[idx]);
+            }
+        }
+    }
+}
 
 // Checks that constraints are invoked using the right order of int values. In
 // passing, verify that adding variables after posting constraints raises an
@@ -415,17 +484,17 @@ TEST_F (ManagerFixture, MutexIntManager) {
 
         // randomly pick up information for all variables to insert. The number
         // of variables to insert is randomly selected and it is guaranteed, at
-        // least one is recorded
+        // least two are recorded
         vector<string> names;
         vector<vector<value_t<int>>> values;
-        int nbvars = 1 + rand () % NB_VARIABLES;
+        int nbvars = 2 + rand () % NB_VARIABLES;
         randVarIntVals (nbvars, names, values);
 
         // and add all these variables to the manager
         addVariables<int>(m, names, values);
 
-        // randomly choose two different variables (which could be the same ...)
-        auto variables = randVectorInt (2, nbvars);
+        // randomly choose two different variables
+        auto variables = randVectorInt (2, nbvars, true);
 
         // Add now a constraint (in the form of a lambda function) which returns
         // false if the sum of its arguments is divisible by a number between 1
@@ -441,6 +510,7 @@ TEST_F (ManagerFixture, MutexIntManager) {
 
         // now, process all values of both variables and verify that mutexes
         // have been properly recognized
+        const valtable_t<int>& valtable = m.get_valtable ();
         const vartable_t& vartable = m.get_vartable ();
         const unique_ptr<multivector_t>& multivector = m.get_multivector();
 
@@ -456,13 +526,17 @@ TEST_F (ManagerFixture, MutexIntManager) {
         ASSERT_EQ (vartable.get_first(variables[1]), bounds2.first);
         ASSERT_EQ (vartable.get_last(variables[1]), bounds2.second);
 
-        // and now verify the values of all mutexies
-        for (size_t idx1 = bounds1.first ; idx1 <= bounds1.second ; idx1++) {
-            for (size_t idx2 = bounds2.first ; idx2 <= bounds2.second ; idx2++) {
+        // and now verify the values of all mutexes
+        for (size_t idx1 = vartable.get_first (variables[0]);
+             idx1 <= vartable.get_last (variables[0]);
+             idx1++) {
+                for (size_t idx2 = vartable.get_first (variables[1]);
+                     idx2 <= vartable.get_last (variables[1]);
+                     idx2++) {
 
                 // get the values stored in the multibitmap
-                int num1 = values[variables[0]][idx1-bounds1.first].get_value ();
-                int num2 = values[variables[1]][idx2-bounds2.first].get_value ();
+                int num1 = valtable[idx1];
+                int num2 = valtable[idx2];
 
                 // verify that those cases where the quotient was randomly
                 // selected to be 6 generate no mutexes
@@ -485,13 +559,92 @@ TEST_F (ManagerFixture, MutexIntManager) {
     }
 }
 
+// Check that mutexes can not be defined over the same variable, i.e., func (Xi,
+// Xi) raises an exception
+// ----------------------------------------------------------------------------
+TEST_F (ManagerFixture, ReflexiveMutexStringManager) {
+
+    for (auto i = 0 ; i < NB_TESTS/100; i++) {
+
+        // create an empty table of CSP variables, i.e., with no values at all
+        manager<string> m;
+
+        // randomly pick up information for all variables to insert. The number
+        // of variables to insert is randomly selected and it is guaranteed, at
+        // least one is recorded
+        vector<string> names;
+        vector<vector<value_t<string>>> values;
+        int nbvars = 1 + rand () % NB_VARIABLES;
+        randVarStringVals (nbvars, names, values);
+
+        // and add all these variables to the manager
+        addVariables<string>(m, names, values);
+
+        // randomly pick up a variable
+        auto variable = rand () % nbvars;
+
+        // and now, verify that invoking a mutex over the same variable
+        // immediately generates an exception. The lambda function is
+        // irrelevant, but a non-commutative function is intentionally used to
+        // provide information about the problem with reflexive mutexes
+        ASSERT_THROW (m.add_constraint ([] (string val1, string val2)->bool {
+            return val1 < val2;}, variable_t{names[variable]}, variable_t{names[variable]}),
+            invalid_argument);
+    }
+}
+
+// Checks that domains are properly initialized with the same values given when
+// variables are registered and precisely the same order
+// ----------------------------------------------------------------------------
+TEST_F (ManagerFixture, CheckDomainStringManager) {
+
+    for (auto i = 0 ; i < NB_TESTS/100 ; i++) {
+
+        // create an empty table of CSP variables, i.e., with no values at all
+        manager<string> m;
+
+        // randomly pick up information for all variables to insert. The number
+        // of variables to insert is randomly selected and it is guaranteed, at
+        // least one is recorded
+        vector<string> names;
+        vector<vector<value_t<string>>> values;
+        int nbvars = 1 + rand () % NB_VARIABLES;
+        randVarStringVals (nbvars, names, values);
+
+        // and add all these variables to the manager
+        addVariables<string>(m, names, values);
+
+        // gain access to the var and valtables
+        const valtable_t<string>& valtable = m.get_valtable();
+        const vartable_t& vartable = m.get_vartable();
+
+        // verify the domain of all variables. All values should be registered
+        // in the vartable in the same order they were given in the domain and
+        // variables should be registered in the same order they were given
+        for (int j = 0 ; j < nbvars ; j++) {
+
+            // verify the number of values registered in the vartable equals the
+            // size of each domain
+            ASSERT_EQ (1 + vartable.get_last (j) - vartable.get_first (j),
+                       values[j].size ());
+
+            // for each index in the domain of the j-th variable
+            for (size_t idx = vartable.get_first (j); idx <= vartable.get_last (j); idx++) {
+
+                // verify the values are strictly the same
+                ASSERT_EQ (values[j][idx-vartable.get_first (j)], valtable[idx]);
+            }
+        }
+    }
+}
+
 // Checks that constraints are invoked using the right order of string values.
 // In passing, verify that adding variables after posting constraints raises an
 // exception
 // ----------------------------------------------------------------------------
 TEST_F (ManagerFixture, InvokeConstraintStringManager) {
 
-    for (auto i = 0 ; i < NB_TESTS/1000 ; i++) {
+    for (auto i = 0 ; i < NB_TESTS/100 ; i++) {
 
         // create an empty table of CSP variables, i.e., with no values at all
         manager<string> m;
@@ -545,17 +698,17 @@ TEST_F (ManagerFixture, MutexStringManager) {
 
         // randomly pick up information for all variables to insert. The number
         // of variables to insert is randomly selected and it is guaranteed, at
-        // least one is recorded
+        // least two are recorded
         vector<string> names;
         vector<vector<value_t<string>>> values;
-        int nbvars = 1 + rand () % NB_VARIABLES;
+        int nbvars = 2 + rand () % NB_VARIABLES;
         randVarStringVals (nbvars, names, values);
 
         // and add all these variables to the manager
         addVariables<string>(m, names, values);
 
-        // randomly choose two different variables (which could be the same ...)
-        auto variables = randVectorInt (2, nbvars);
+        // randomly choose two different variables
+        auto variables = randVectorInt (2, nbvars, true);
 
         // Add now a constraint (in the form of a lambda function) which returns
         // false if any of the strings contains a letter randomly selected
@@ -566,6 +719,7 @@ TEST_F (ManagerFixture, MutexStringManager) {
 
         // now, process all values of both variables and verify that mutexes
         // have been properly recognized
+        const valtable_t<string>& valtable = m.get_valtable ();
         const vartable_t& vartable = m.get_vartable ();
         const unique_ptr<multivector_t>& multivector = m.get_multivector();
 
@@ -581,13 +735,17 @@ TEST_F (ManagerFixture, MutexStringManager) {
         ASSERT_EQ (vartable.get_first(variables[1]), bounds2.first);
         ASSERT_EQ (vartable.get_last(variables[1]), bounds2.second);
 
-        // and now verify the values of all mutexies
-        for (size_t idx1 = bounds1.first ; idx1 <= bounds1.second ; idx1++) {
-            for (size_t idx2 = bounds2.first ; idx2 <= bounds2.second ; idx2++) {
+        // and now verify the values of all mutexes
+        for (size_t idx1 = vartable.get_first (variables[0]);
+             idx1 <= vartable.get_last (variables[0]);
+             idx1++) {
+                for (size_t idx2 = vartable.get_first (variables[1]);
+                     idx2 <= vartable.get_last (variables[1]);
+                     idx2++) {
 
                 // get the values stored in the multibitmap
-                string str1 = values[variables[0]][idx1-bounds1.first].get_value ();
-                string str2 = values[variables[1]][idx2-bounds2.first].get_value ();
+                string str1 = valtable[idx1];
+                string str2 = valtable[idx2];
 
                 // and verify that only those cases where either argument
                 // contains the letter randomly selected is recognized as a
@@ -598,6 +756,85 @@ TEST_F (ManagerFixture, MutexStringManager) {
                 // Mutexes are reflective, thus verify the opposite as well
                 ASSERT_TRUE ( (multivector->find (idx2, idx1) && (str1.find (chr) || str2.find (chr))) ||
                               (!multivector->find (idx2, idx1) && !str1.find (chr) && !str2.find (chr) ));
+            }
+        }
+    }
+}
+
+// Check that mutexes can not be defined over the same variable, i.e., func (Xi,
+// Xi) raises an exception
+// ----------------------------------------------------------------------------
+TEST_F (ManagerFixture, ReflexiveMutexTimeManager) {
+
+    for (auto i = 0 ; i < NB_TESTS/100; i++) {
+
+        // create an empty table of CSP variables, i.e., with no values at all
+        manager<time_t> m;
+
+        // randomly pick up information for all variables to insert. The number
+        // of variables to insert is randomly selected and it is guaranteed, at
+        // least one is recorded
+        vector<string> names;
+        vector<vector<value_t<time_t>>> values;
+        int nbvars = 1 + rand () % NB_VARIABLES;
+        randVarTimeVals (nbvars, names, values);
+
+        // and add all these variables to the manager
+        addVariables<time_t>(m, names, values);
+
+        // randomly pick up a variable
+        auto variable = rand () % nbvars;
+
+        // and now, verify that invoking a mutex over the same variable
+        // immediately generates an exception. The lambda function is
+        // irrelevant, but a non-commutative function is intentionally used to
+        // provide information about the problem with reflexive mutexes
+        ASSERT_THROW (m.add_constraint ([] (time_t val1, time_t val2)->bool {
+            return val1 < val2;}, variable_t{names[variable]}, variable_t{names[variable]}),
+            invalid_argument);
+    }
+}
+
+// Checks that domains are properly initialized with the same values given when
+// variables are registered and precisely the same order
+// ----------------------------------------------------------------------------
+TEST_F (ManagerFixture, CheckDomainTimeManager) {
+
+    for (auto i = 0 ; i < NB_TESTS/100 ; i++) {
+
+        // create an empty table of CSP variables, i.e., with no values at all
+        manager<time_t> m;
+
+        // randomly pick up information for all variables to insert. The number
+        // of variables to insert is randomly selected and it is guaranteed, at
+        // least one is recorded
+        vector<string> names;
+        vector<vector<value_t<time_t>>> values;
+        int nbvars = 1 + rand () % NB_VARIABLES;
+        randVarTimeVals (nbvars, names, values);
+
+        // and add all these variables to the manager
+        addVariables<time_t>(m, names, values);
+
+        // gain access to the var and valtables
+        const valtable_t<time_t>& valtable = m.get_valtable();
+        const vartable_t& vartable = m.get_vartable();
+
+        // verify the domain of all variables. All values should be registered
+        // in the vartable in the same order they were given in the domain and
+        // variables should be registered in the same order they were given
+        for (int j = 0 ; j < nbvars ; j++) {
+
+            // verify the number of values registered in the vartable equals the
+            // size of each domain
+            ASSERT_EQ (1 + vartable.get_last (j) - vartable.get_first (j),
+                       values[j].size ());
+
+            // for each index in the domain of the j-th variable
+            for (size_t idx = vartable.get_first (j); idx <= vartable.get_last (j); idx++) {
+
+                // verify the values are strictly the same
+                ASSERT_EQ (values[j][idx-vartable.get_first (j)], valtable[idx]);
             }
         }
     }
@@ -656,24 +893,24 @@ TEST_F (ManagerFixture, InvokeConstraintTimeManager) {
 // ----------------------------------------------------------------------------
 TEST_F (ManagerFixture, MutexTimeManager) {
 
-    for (auto i = 0 ; i < NB_TESTS/50 ; i++) {
+    for (auto i = 0 ; i < NB_TESTS/100 ; i++) {
 
         // create an empty table of CSP variables, i.e., with no values at all
         manager<time_t> m;
 
         // randomly pick up information for all variables to insert. The number
         // of variables to insert is randomly selected and it is guaranteed, at
-        // least one is recorded
+        // least two are recorded
         vector<string> names;
         vector<vector<value_t<time_t>>> values;
-        int nbvars = 1 + rand () % NB_VARIABLES;
+        int nbvars = 2 + rand () % NB_VARIABLES;
         randVarTimeVals (nbvars, names, values);
 
         // and add all these variables to the manager
         addVariables<time_t>(m, names, values);
 
-        // randomly choose two different variables (which could be the same ...)
-        auto variables = randVectorInt (2, nbvars);
+        // randomly choose two different variables
+        auto variables = randVectorInt (2, nbvars, true);
 
         // Add now a constraint (in the form of a lambda function) which
         // verifies whether one among six different plausible temporal
@@ -687,6 +924,7 @@ TEST_F (ManagerFixture, MutexTimeManager) {
 
         // now, process all values of both variables and verify that mutexes
         // have been properly recognized
+        const valtable_t<time_t>& valtable = m.get_valtable ();
         const vartable_t& vartable = m.get_vartable ();
         const unique_ptr<multivector_t>& multivector = m.get_multivector();
 
@@ -702,32 +940,24 @@ TEST_F (ManagerFixture, MutexTimeManager) {
         ASSERT_EQ (vartable.get_first(variables[1]), bounds2.first);
         ASSERT_EQ (vartable.get_last(variables[1]), bounds2.second);
 
-        // and now verify the values of all mutexies
-        for (size_t idx1 = bounds1.first ; idx1 <= bounds1.second ; idx1++) {
-            for (size_t idx2 = bounds2.first ; idx2 <= bounds2.second ; idx2++) {
+        // and now verify the values of all mutexes
+        for (size_t idx1 = vartable.get_first (variables[0]);
+             idx1 <= vartable.get_last (variables[0]);
+             idx1++) {
+                for (size_t idx2 = vartable.get_first (variables[1]);
+                     idx2 <= vartable.get_last (variables[1]);
+                     idx2++) {
 
                 // get the values stored in the multibitmap
-                time_t num1 = values[variables[0]][idx1-bounds1.first].get_value ();
-                time_t num2 = values[variables[1]][idx2-bounds2.first].get_value ();
+                time_t num1 = valtable[idx1];
+                time_t num2 = valtable[idx2];
 
                 // verify now that all mutexes have been properly stored
-                if (multivector->find (idx1, idx2)) {
-                    if (tfuncs[op] (num1, num2)) {
-                        cout << " " << num1 << " " << trels[op] << " " << num2 << ": " << difftime (num2, num1) << endl;
-                    }
-                    ASSERT_FALSE (tfuncs[op] (num1, num2));
-                } else {
-                    if (!tfuncs[op] (num1, num2)) {
-                        cout << " " << num1 << " " << trels[op] << " " << num2 << ": " << difftime (num2, num1) << endl;
-                    }
-                    ASSERT_TRUE (tfuncs[op] (num1, num2));
-                }
+                ASSERT_TRUE ( ( multivector->find (idx1, idx2) && !tfuncs[op] (num1, num2)) ||
+                              (!multivector->find (idx1, idx2) &&  tfuncs[op] (num1, num2)) );
 
-                // ASSERT_TRUE ( ( multivector->find (idx1, idx2) && !tfuncs[op] (num1, num2)) ||
-                //               (!multivector->find (idx1, idx2) && tfuncs[op] (num1, num2)) );
-
-                // ASSERT_TRUE ( ( multivector->find (idx2, idx1) && !tfuncs[op] (num1, num2)) ||
-                //               (!multivector->find (idx2, idx1) && tfuncs[op] (num1, num2)) );
+                ASSERT_TRUE ( ( multivector->find (idx2, idx1) && !tfuncs[op] (num1, num2)) ||
+                              (!multivector->find (idx2, idx1) &&  tfuncs[op] (num1, num2)) );
             }
         }
     }

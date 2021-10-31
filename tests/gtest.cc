@@ -17,13 +17,12 @@ int main(int argc, char **argv)
     ::testing::InitGoogleTest(&argc, argv);
 
     // Run specific tests only
-    // testing::GTEST_FLAG(filter) = "ManagerFixture.UnwindFullAssignIntManager";
-    testing::GTEST_FLAG(filter) = "ManagerFixture.MutexTimeManager";
+    // testing::GTEST_FLAG(filter) = "ManagerFixture.*";
 
     // Exclude specific tests
     //
     // Bitmaps and multibitmaps are not used anymore
-    // testing::GTEST_FLAG(filter) = "-BitmapFixture.*:MultibitmapFixture.*";
+    testing::GTEST_FLAG(filter) = "-BitmapFixture.*:MultibitmapFixture.*";
 
     // and run the selection of tests
     return RUN_ALL_TESTS();

@@ -16,13 +16,13 @@
 #include<stddef.h>
 
 // predefined number of executions of each unit test
-constexpr int NB_TESTS = 10000;
+constexpr int NB_TESTS = 10'000;
 
 // Maximum length of the bitmaps: 8 Gbytes
-constexpr size_t MAX_LENGTH = 64000000000;
+constexpr size_t MAX_LENGTH = 64'000'000'000;
 
 // Maximun number of CSP variables and values for each variable
-constexpr size_t NB_VARIABLES = 10000;
+constexpr size_t NB_VARIABLES = 10'000;
 constexpr size_t NB_VALUES = 100;
 
 #endif // _TSTDEFS_H_

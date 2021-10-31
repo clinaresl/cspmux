@@ -131,12 +131,13 @@ TEST_F (VartableFixture, EmptyDomainVartable) {
         vartable_t vartable;
 
         // try to register a variable with an empty domain, i.e., where the last
-        // index is strictly less or equal than the first index, and verify an
-        // exception is thrown
+        // index is strictly less than the first index, and verify an exception
+        // is thrown. Note that if the last index equals the first, the domain
+        // is not empty and contains precisely one value
         variable_t var {randString (50)};
         size_t first = rand () % (NB_VARIABLES * NB_VALUES);
-        size_t last = first - (rand () % NB_VALUES);
-        EXPECT_THROW (vartable.insert (var, first, last),
+        size_t last = first - (1 + rand () % NB_VALUES);
+        ASSERT_THROW (vartable.insert (var, first, last),
                       invalid_argument);
     }
 }

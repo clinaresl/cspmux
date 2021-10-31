@@ -165,12 +165,6 @@ class manager {
                 // used to remember those values already inserted and to look it
                 // up prior to new insertions
                 if (values.find (value) != values.end ()) {
-                    cout << " Domain: [";
-                    for (auto i = 0 ; i < domain.size (); i++) {
-                        cout << domain[i].get_value () << " ";
-                    }
-                    cout << "]" << endl;
-                    cout << " Value: " << value.get_value () << endl << endl;
                     throw runtime_error ("[manager::addvariable_t] Repeated value in the domain of a variable");
                 }
 
@@ -193,15 +187,19 @@ class manager {
         // values of the domains of the given variables. Every combination of
         // values which makes the function to return false is stored as a mutex.
         //
-        // It is strictly forbidden to invoke different constraints over the
-        // same set of variables, i.e., add_constraint (func1, X1, X2) and
-        // add_constraint (func2, X1, X2) might cause unexpected results
+        // Mutexes are represented with functions that might be either
+        // commutative or not. In case they are commutative, then a mutex could
+        // be defined over the same variable, i.e., func (Xi, Xi). However, this
+        // does not make any sense. Thus, in case a mutex is invoked over the
+        // same variables, then an exception is immediately raised
         //
         // Likewise, this solver assumes mutexes to be reflexive. Thus, it is
         // strictly forbidden to invoke the same constraint over the same set of
-        // variables with different orderings, i.e., add_constraint (func, X1,
-        // X2) and add_constraint (func, X2, X1) are strictly equivalent and
-        // invoking both might cause unpredictable effects
+        // variables with different orderings, i.e., add_constraint (func, Xi,
+        // Xj) and add_constraint (func, Xj, Xi) are strictly equivalent and
+        // invoking both might cause unpredictable effects ---the reason being
+        // that the same mutexes are stored more than once, but the search
+        // algorithm should remove them only once
         template<typename Handler>
         void add_constraint (Handler func,
                              const variable_t& var1, const variable_t& var2) {
@@ -217,6 +215,11 @@ class manager {
                 // if operator[] raised an exception, then this variable has not
                 // been registered
                 throw invalid_argument ("[manager::add_constraint] Unregistered variable");
+            }
+
+            // verify that both variables are different
+            if (index1 == index2) {
+                throw invalid_argument {"[manager::add_constraint] Constraints can not be defined over the same variable"};
             }
 
             // Next, in case the multivector storing all mutexes has not been
@@ -241,8 +244,7 @@ class manager {
 
                     // if the constraint returns false, then a mutex has been
                     // found
-                    if (!(func) (_valtable.get_value(i).get_value (),
-                                  _valtable.get_value(j).get_value ())) {
+                    if (!(func) (_valtable[i], _valtable[j])) {
 
                         // set this mutex in the multibitmap. Note this solver
                         // only allows mutexes which are reflexive
@@ -251,9 +253,9 @@ class manager {
 
                         // and update the number of mutexes of these entries
                         //
-                        // WARNING! adding constraints over the same set of
-                        // variables with different orderings would cause
-                        // unpredictable effects!
+                        // WARNING! adding constraints again over the same set
+                        // of variables previously used but with different
+                        // orderings would cause unpredictable effects!
                         _valtable.increment_nbvalues (i);
                         _valtable.increment_nbvalues (j);
                     }
