@@ -18,6 +18,7 @@ int main(int argc, char **argv)
 
     // Run specific tests only
     // testing::GTEST_FLAG(filter) = "ManagerFixture.*";
+    // testing::GTEST_FLAG(filter) = "ManagerFixture.Restore*";
 
     // Exclude specific tests
     //

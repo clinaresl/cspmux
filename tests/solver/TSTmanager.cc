@@ -1221,285 +1221,214 @@ TEST_F (ManagerFixture, RestoreValueNbMutexesManager) {
     }
 }
 
-// manager<int> mFullAssignment;
-// void handler_var_value_fullassignment (size_t index, size_t val1, size_t val2) {
-//     mFullAssignment.set_var_value (index, val1, val2);
-// }
-// void handler_var_domain_fullassignment (size_t index, size_t val1, size_t val2) {
-//     mFullAssignment.set_var_nbvalues (index, val1, val2);
-// }
-// void handler_val_status_fullassignment (size_t index, size_t val1, size_t val2) {
-//     mFullAssignment.set_val_status (index, val1, val2);
-// }
-// void handler_val_nbvalues_fullassignment (size_t index, size_t val1, size_t val2) {
-//     mFullAssignment.set_val_nbvalues(index, val1, val2);
-// }
+manager<int> mFullAssignment;
+void handler_var_value_fullassignment (size_t index, size_t val1, size_t val2) {
+    mFullAssignment.set_var_value (index, val1, val2);
+}
+void handler_val_status_fullassignment (size_t index, size_t val1, size_t val2) {
+    mFullAssignment.set_val_status (index, val1, val2);
+}
+void handler_val_nbmutexes_fullassignment (size_t index, size_t val1, size_t val2) {
+    mFullAssignment.set_val_nbmutexes(index, val1, val2);
+}
+void handler_var_domain_fullassignment (size_t index, size_t val1, size_t val2) {
+    mFullAssignment.set_var_nbvalues (index, val1, val2);
+}
 
-// // Check that int managers are capable of undoing all the actions behind assigning
-// // a value to a variable
-// // ----------------------------------------------------------------------------
-// TEST_F (ManagerFixture, UnwindFullAssignIntManager) {
+// Check that int managers are capable of undoing all the actions behind assigning
+// a value to a variable
+// ----------------------------------------------------------------------------
+TEST_F (ManagerFixture, RestoreFullAssignmentIntManager) {
 
-//     // first, update the manager with variables and values
+    // randomly pick up information for all variables to insert. The number
+    // of variables to insert is randomly selected and it is guaranteed, at
+    // least two are recorded
+    vector<string> names;
+    vector<vector<value_t<int>>> values;
+    int nbvars = 2 + rand () % NB_VARIABLES;
+    randVarIntVals (nbvars, names, values);
 
-//     // randomly pick up information for the variables to insert
-//     vector<string> names;
-//     vector<vector<value_t<int>>> values;
-//     randVarIntVals (NB_VARIABLES/10, names, values);
+    // and add all these variables to the manager
+    addVariables<int>(mFullAssignment, names, values);
 
-//     // now, insert all these variables
-//     for (int j = 0 ; j < NB_VARIABLES/10 ; j++) {
+    // randomly choose two different variables
+    auto variables = randVectorInt (2, nbvars, true);
 
-//         // add the i-th variable along with its domain
-//         mFullAssignment.add_variable (variable_t (names[j]), values[j]);
-//     }
+    // Add now a constraint in the form of a lambda function. The chosen mutex
+    // is intentionally non-commutative
+    mFullAssignment.add_constraint([] (int val1, int val2) {
+        return val1 < val2;
+    }, variable_t{names[variables[0]]}, variable_t{names[variables[1]]});
 
-//     // randomly choose two different variables making sure they are not the same
-//     vector<int> variables;
-//     do {
-//         variables = randVectorInt (2, NB_VARIABLES/10);
-//     } while (variables[0] == variables[1]);
+    // get aliases to the inner data structures of the manager
+    const valtable_t<int>& valtable = mFullAssignment.get_valtable ();
+    const vartable_t& vartable = mFullAssignment.get_vartable ();
+    const unique_ptr<multivector_t>& multivector = mFullAssignment.get_multivector();
 
-//     // Add now a constraint (in the form of a lambda function) which returns
-//     // false if the sum of its arguments is divisible by a number between 2 and
-//     // 5, over two variables randomly chosen and retrieve the multivector
-//     quotient = 2 + (rand ()%4);
-//     mFullAssignment.add_constraint([] (int val1, int val2) {
-//         return (val1 + val2) % quotient != 0;
-//     }, variable_t{names[variables[0]]}, variable_t{names[variables[1]]});
-//     multivector_t* multivector = mFullAssignment.get_multivector();
+    // now, performe the tests
+    for (auto i = 0 ; i < NB_TESTS/100 ; i++) {
 
-//     // make a backup copy of the main structs in the manager
-//     vartable_t vartableFullAssignment (mFullAssignment.get_vartable ());
-//     valtable_t valtableFullAssignment (mFullAssignment.get_valtable ());
-//     // multivector_t multivectorFullAssignment (*mFullAssignment.get_multivector ());
+        // create an empty stack
+        sstack_t stack;
 
-//     // now, performe the tests
-//     for (auto i = 0 ; i < NB_TESTS ; i++) {
+        // VARIABLE <- VALUE
+        // --------------------------------------------------------------------
 
-//         // create an empty stack
-//         sstack_t stack;
+        // modify the value of one of the variables randomly selected to take
+        // one of the values defined in its domain
+        auto randidx = rand () % 2;
+        size_t variable = variables[randidx];
+        size_t last = vartable.get_first (variable) +
+            rand () % (1 + vartable.get_last (variable) - vartable.get_first (variable));
 
-//         // VARIABLE <- VALUE
-//         // --------------------------------------------------------------------
+        // and make a backup copy of the current value of the selected variable
+        size_t prev = vartable.get_value (variable);
 
-//         // modify the value of the first variable randomly selected among those
-//         // in its domain
-//         auto randidx = rand ()%2;
-//         size_t variable = variables[randidx];
-//         size_t last = mFullAssignment.get_vartable ().get_first (variable) +
-//             rand () % (1 + mFullAssignment.get_vartable ().get_last (variable) -
-//                        mFullAssignment.get_vartable ().get_first (variable));
+        // create a frame which will hold a single action used to restore the
+        // value of the selected variable
+        frame_t frame;
+        frame += action_t {handler_var_value_fullassignment, variable, prev, last};
 
-//         // and make a backup copy of the current value of the selected variable
-//         size_t prev = mFullAssignment.get_vartable ().get_value (variable);
+        // Update the value of this variable and verify that it was properly
+        // recorded
+        mFullAssignment.set_var_value (variable, last, prev);
+        ASSERT_EQ (vartable.get_value (variable), last);
 
-//         // first, create an empty frame
-//         frame_t frame;
+        // STATUS[DOMAIN\{VALUE}]<-FALSE
+        // --------------------------------------------------------------------
 
-//         // now, create an action to restore the value of the number of values in
-//         // the domain of the selected variable before updating it
-//         action_t assign_action {handler_var_value_fullassignment,
-//             variable,
-//             prev,
-//             last};
-//         frame.push (assign_action);
+        // disable the availability of all values in the domain of the selected
+        // variable, but the value assigned
+        for (auto j = vartable.get_first (variable) ; j <= vartable.get_last (variable) ; j++) {
 
-//         // Update the value of this variable and verify that it was properly
-//         // recorded
-//         mFullAssignment.get_vartable ().assign (variable, last);
-//         ASSERT_EQ (mFullAssignment.get_vartable ().get_value (variable), last);
+            // only in case this is not the assigned value
+            if (j != last) {
 
-//         // STATUS[MUTEX] <- FALSE
-//         // --------------------------------------------------------------------
+                // add another action to the frame to restore the current status
+                // of this value
+                frame += action_t {handler_val_status_fullassignment, j, true, false};
 
-//         // verify the number of enabled mutexes equals its number of mutexes.
-//         // Verify, indeed the value randomly selected has a strictly positive
-//         // number of mutexes. Although very unlikely it is possible to have a
-//         // null number of mutexes. If this is the case, strictly verify that
-//         // this is correct
-//         if ((*multivector)[last].size () == 0) {
+                // disable this status and verify the operation took effect
+                mFullAssignment.set_val_status (j, false, true);
+                ASSERT_FALSE (valtable.get_status (j));
+            }
+        }
 
-//             auto lastvalue = mFullAssignment.get_valtable().get_value(last).get_value ();
-//             cout << " Variable idx  : " << variables[randidx] << endl;
-//             cout << " \t 1st value  : " << mFullAssignment.get_vartable ().get_first (variable) << endl;
-//             cout << " \t lst value  : " << mFullAssignment.get_vartable ().get_last (variable) << endl;
-//             cout << " 1-Variable idx: " << variables[1-randidx] << endl;
-//             cout << " \t 1st value  : " << mFullAssignment.get_vartable ().get_first (variables[1-randidx]) << endl;
-//             cout << " \t lst value  : " << mFullAssignment.get_vartable ().get_last (variables[1-randidx]) << endl;
-//             cout << " Quotient      : " << quotient << endl;
-//             cout << " Nuevo índice  : " << last << endl;
-//             cout << " Nuevo valor   : " << lastvalue << endl;
-//             for (auto kidx = mFullAssignment.get_vartable ().get_first(1-randidx) ;
-//                  kidx <= mFullAssignment.get_vartable ().get_last (1-randidx) ;
-//                  kidx++) {
-//                 cout << "\t" << lastvalue << " + " << mFullAssignment.get_valtable().get_value (kidx).get_value () << ": " << lastvalue + mFullAssignment.get_valtable().get_value (kidx).get_value () << endl;
-//                 cout << "\t\t remainder: " << (lastvalue + mFullAssignment.get_valtable().get_value (kidx).get_value ()) % quotient << endl;
-//             }
-//         }
-//         ASSERT_EQ ((*multivector)[last].size (),
-//                    mFullAssignment.get_valtable().get_nbmutexes (last));
-//         ASSERT_TRUE ((*multivector)[last].size () > 0);
+        // NBMUTEXES--
+        // --------------------------------------------------------------------
 
-//         // count the number of values whose number of enabled mutexes has been
-//         // updated
-//         size_t nbvalues_updated = 0;
+        // decrement the number of feasible mutexes of those values which are
+        // mutex with each one that has been disabled
+        for (auto j = vartable.get_first (variable); j <= vartable.get_last (variable) ; j++) {
+            if (j != last) {
+                for (auto k = 0 ; k < (*multivector)[j].size () ; k++) {
 
-//         // Disable every mutex with the value randomly selected in the domain of
-//         // the variable raondomly picked up. For each value disabled, update
-//         // also the number of enabled mutexes of those values mutex with the one
-//         // being disabled.
-//         for (auto mvalue : (*multivector)[last]) {
+                    // get the index of the value to modify and its current
+                    // number of enabled mutexes
+                    auto validx = (*multivector)[j][k];
+                    auto nbmutexes = valtable.get_nbmutexes (validx);
 
-//             // verify this is enabled by default. Certainly, the same value
-//             // might be modified in several iterations of this overall loop (the
-//             // one running over the number of tests to perform), but the point
-//             // is that after completion of each loop, the state of all values
-//             // should be restored!
-//             ASSERT_TRUE (multivector->get_status (mvalue));
+                    // add another action to the frame to restore the number of
+                    // feasible mutexes of this value
+                    frame += action_t {handler_val_nbmutexes_fullassignment, validx,
+                            nbmutexes, nbmutexes-1};
 
-//             // first, create an action to restore the status of this value
-//             // before disabling it and push it also onto the frame.
-//             action_t status_action{handler_val_status_fullassignment,
-//                 size_t(mvalue),
-//                 true,
-//                 false
-//             };
-//             frame.push (status_action);
+                    // decrement the number of mutexes of this specific value
+                    mFullAssignment.set_val_nbmutexes (validx, nbmutexes-1, nbmutexes);
+                    ASSERT_EQ (valtable.get_nbmutexes (validx), nbmutexes-1);
+                }
+            }
+        }
 
-//             // and disable this entry and verify that its new status was
-//             // properly saved
-//             mFullAssignment.get_multivector()->set_status(mvalue, false);
-//             ASSERT_FALSE (multivector->get_status (mvalue));
+        // STATUS[MUTEX (VALUE)]<-FALSE
+        // --------------------------------------------------------------------
 
-//             // NUMBER OF LEGAL VALUES IN EACH DOMAIN
-//             // ----------------------------------------------------------------
+        // disable all values that are mutex with the value randomly selected
+        // for this variable
+        for (auto jmutex : (*multivector)[last]) {
 
-//             // next, update the number of legal values in the domain of the
-//             // variable this value belongs to
-//             size_t mvariable = mFullAssignment.val_to_var(mvalue);
+            // get the current status of this entry
+            auto status = valtable.get_status (jmutex);
 
-//             // first, create an action to restore the number of legal values in
-//             // the domain of this variable and push it onto the frame
-//             action_t domain_action{handler_var_domain_fullassignment,
-//                 mvariable,
-//                 mFullAssignment.get_vartable().get_nbvalues(mvariable),
-//                 mFullAssignment.get_vartable().get_nbvalues(mvariable)-1
-//             };
-//             frame.push (domain_action);
+            // add another action to the frame to restore the status of this value
+            frame += action_t {handler_val_status_fullassignment, jmutex,
+                    status, false};
 
-//             // now, effectively decrement the number of legal values in the
-//             // domain of this variable and, in passing, verify there is at least
-//             // one!!
-//             size_t domain_length = mFullAssignment.get_vartable ().get_nbvalues (mvariable);
-//             ASSERT_GE (mFullAssignment.get_vartable ().get_nbvalues (mvariable), 1);
-//             mFullAssignment.get_vartable ().decrement_nbvalues(mvariable);
-//             ASSERT_EQ (mFullAssignment.get_vartable ().get_nbvalues (mvariable),
-//                        domain_length-1);
+            // disable this value in the valtable
+            mFullAssignment.set_val_status (jmutex, false, status);
+            ASSERT_FALSE (valtable.get_status (jmutex));
+        }
 
-//             // NUMBER OF ENABLED MUTEXES
-//             // ----------------------------------------------------------------
+        // NBVALUES[MUTEX (VALUE)]--
+        // --------------------------------------------------------------------
 
-//             // in addition, update the number of enabled mutexes of those values
-//             // which are mutex with this one
-//             for (auto jvalue : (*multivector)[mvalue]) {
+        // each mutex with val disabled as a consequence of the assignment
+        // var<-val automatically reduces the number of feasibles values of the
+        // variable it belongs to
+        for (auto jmutex : (*multivector)[last]) {
 
-//                 // make a backup copy of the current number of enabled mutexes
-//                 // of the value mvalue
-//                 size_t current_nbvalue = mFullAssignment.get_valtable ().get_nbmutexes (jvalue);
+            // get the variable this value belongs to, and the current number of
+            // feasible values in its domain
+            auto jvar = mFullAssignment.val_to_var (jmutex);
+            auto jdomain = vartable.get_nbvalues (jvar);
 
-//                 // create an action which restores the current number of enabled
-//                 // values
-//                 action_t nbvalues_action (handler_val_nbvalues_fullassignment,
-//                                           size_t (jvalue),
-//                                           mFullAssignment.get_valtable ().get_nbmutexes (jvalue),
-//                                           mFullAssignment.get_valtable ().get_nbmutexes (jvalue) - 1);
-//                 frame.push (nbvalues_action);
+            // only in case this domain is not empty
+            if (jdomain > 0) {
 
-//                 // decrement the number of enabled mutexes of one value which is
-//                 // mutex with mvalue
-//                 mFullAssignment.get_valtable ().decrement_nbvalues (jvalue);
+                // add another action to the frame to restore the number of
+                // feasible values in the domain of this variable
+                frame += action_t {handler_var_domain_fullassignment, jvar, jdomain, jdomain-1};
 
-//                 // verify the number of enabled mutexes has been updated
-//                 ASSERT_EQ (mFullAssignment.get_valtable ().get_nbmutexes (jvalue),
-//                            current_nbvalue-1);
+                // and decrement the number of feasible values in the domain of
+                // this variable
+                mFullAssignment.set_var_nbvalues (jvar, jdomain-1, jdomain);
+                ASSERT_EQ (vartable.get_nbvalues (jvar), jdomain-1);
+            }
+        }
 
-//                 // and increment the number of values whose number of enabled
-//                 // mutexes has been updated
-//                 nbvalues_updated++;
-//             }
-//         }
+        // Push all changes to the stack and restore the previous state
+        stack += frame;
+        ASSERT_EQ (stack.size (), 1);
+        stack.unwind ();
 
-//         // once disabling mutexes is over, the number of actions in the frame
-//         // should be equal to:
-//         //
-//         //    1 assign action: assigns a value randomly chosen to a variable
-//         //                     randomly selected, +
-//         //
-//         //    multivector->get (last).size: or the number of mutexes of the
-//         //                                  value assigned to the variable
-//         //                                  randomly selected which is strictly
-//         //                                  equal to the number of values that
-//         //                                  have been disabled because they are
-//         //                                  indeed mutex with the value
-//         //                                  assigned, +
-//         //
-//         //    multivector->get (last).size: or the number of mutexes of the
-//         //                                  value assigned to the variable
-//         //                                  randomly selected which is strictly
-//         //                                  equal to the number of updates of
-//         //                                  the legal number of values in the
-//         //                                  domain of a variable, +
-//         //
-//         //    nbvalues_updated (the number of values whose enabled mutexes has
-//         //    been updated): values that have updated the number of enabled
-//         //    mutexes. If a value is disabled then those mutex with it are not
-//         //    threaten anymore
-//         ASSERT_EQ (frame.size (), 1+2*(*multivector)[last].size ()+nbvalues_updated);
+        // NBVALUES[MUTEX (VALUE)]--
+        // --------------------------------------------------------------------
+        for (auto j = 0 ; j < vartable.size () ; j++) {
+            ASSERT_EQ (vartable.get_nbvalues (j),
+                       1 + vartable.get_last (j) - vartable.get_first (j));
+        }
 
-//         // before undoing changes, ensure that the main structs of the solver
-//         // have indeed being modified
-//         // ASSERT_NE (mFullAssignment.get_vartable (), vartableFullAssignment);
-//         // ASSERT_NE (mFullAssignment.get_valtable (), valtableFullAssignment);
-//         // ASSERT_NE (*mFullAssignment.get_multivector (), multivectorFullAssignment);
+        // STATUS[MUTEX (VALUE)]<-FALSE
+        // --------------------------------------------------------------------
+        for (auto j = 0 ; j < valtable.size () ; j++) {
+            ASSERT_TRUE (valtable.get_status (j));
+        }
 
-//         // and now undo all modifications after pushing this frame onto the
-//         // stack. Ensure also the stack only has one frame
-//         stack.push (frame);
-//         ASSERT_EQ (stack.size (), 1);
-//         stack.unwind();
+        // CHECK NBMUTEXES--
+        // --------------------------------------------------------------------
+        for (auto j = vartable.get_first (variable); j <= vartable.get_last (variable) ; j++) {
+            for (auto k = 0 ; k < (*multivector)[j].size () ; k++) {
+                auto validx = (*multivector)[j][k];
+                ASSERT_EQ (valtable.get_nbmutexes (validx), (*multivector)[validx].size ());
+            }
+        }
 
-//         // now, verify that all changes have been properly unwound. First,
-//         // ensure the value of the selected variable has been restored
-//         ASSERT_EQ (mFullAssignment.get_vartable ().get_value (variable), prev);
+        // CHECK STATUS[DOMAIN\{VALUE}]<-FALSE
+        // --------------------------------------------------------------------
 
-//         // and now verify that all mutexes of the randomly selected value are
-//         // enabled again along with other information
-//         for (auto mvalue : (*multivector)[last]) {
+        // this check is unnecessary, as all values have been already verified
+        // to be enabled
+        for (auto j = vartable.get_first (variable) ; j <= vartable.get_last (variable) ; j++) {
+            ASSERT_TRUE (valtable.get_status (j));
+        }
 
-//             // first, ensure that the status of all values that were mutex has
-//             // been restored
-//             ASSERT_TRUE (multivector->get_status (mvalue));
-
-//             // next, verify also that the number of legal values in the domain
-//             // of the affected variable has been restored as well
-//             ASSERT_EQ (mFullAssignment.get_vartable ().get_nbvalues(mFullAssignment.val_to_var(mvalue)),
-//                 vartableFullAssignment.get_nbvalues (mFullAssignment.val_to_var(mvalue)));
-
-//             // and now verify also that the number of enabled mutexes of those
-//             // values which are mutex with mvalue has been restored as well
-//             for (auto jvalue : (*multivector)[mvalue]) {
-//                 ASSERT_EQ (mFullAssignment.get_valtable ().get_nbmutexes (jvalue),
-//                            valtableFullAssignment.get_nbvalues (jvalue));
-//             }
-//         }
-
-//         // overall, verify the main structs are intact
-//         // ASSERT_EQ (mFullAssignment.get_vartable (), vartableFullAssignment);
-//         // ASSERT_EQ (mFullAssignment.get_valtable (), valtableFullAssignment);
-//         // ASSERT_EQ (*mFullAssignment.get_multivector (), multivectorFullAssignment);
-//     }
-// }
+        // CHECK VARIABLE <- VALUE
+        // --------------------------------------------------------------------
+        for (auto j = 0 ; j < vartable.size () ; j++) {
+            ASSERT_EQ (vartable.get_value (j), string::npos);
+        }
+    }
+}
 
 
 // Local Variables:
