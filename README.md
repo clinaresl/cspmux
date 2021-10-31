@@ -2,7 +2,7 @@ August, 5, 2021
 
 # Introduction #
 
-`cspmux` is a constraint satsifaction (CSP) solver based on binary mutex. It is implemented in C++ and distributed as a library.
+`cspmux` is a constraint satsifaction (CSP) solver based on binary mutexes. It is implemented in C++ and distributed as a library.
 
 `cspmux` defines a *Constraint Satisfaction Task* as a triplet *(X, D, M)* where:
 
@@ -15,18 +15,31 @@ August, 5, 2021
 
 # Dependencies #
 
-None
+Tests have been created using the [Google Test Framework](https://github.com/google/googletest) which is necessary for both compiling and runing the tests, see below.
 
 
 # Install #
 
-To compile the `cspmux` library you can use the following command:
+To download the software clone this repository:
+
+``` bash
+    $ git clone https://github.com/clinaresl/cspmux.git
+```
+
+To compile the `cspmux` library, the tests and all the examples, cd to `cspmux`
+and compile all parts with:
 
 ```bash
+   $ cd cspmux/
    $ cmake --build .
 ```
 
-`cmake`, will go through a number of tests and, if it does not find any error, it will automatically build the library.
+To compile only the `cspmux` library cd to `cspmux/src` and compile the code:
+
+```bash
+   $ cd cspmux/src/
+   $ cmake --build .
+```
 
 To install the library just type:
 
@@ -59,18 +72,18 @@ Finally, to entirely remove the intermediate files from the installation directo
 
 # Tests #
 
-The unit tests have been defined using Google Test. To compile all test cases and run the tests, type:
+The unit tests have been defined using Google Test. To compile separately the
+unit test cases type the following from `cspmux/`:
 
 ```bash
    $ cd tests/
    $ cmake --build .
 ```    
 
-from the root directory where the library has been installed. To run the tests:
+To run the tests:
 
 ```bash
-   $ cd tests
-   $ ./gtest
+   $ tests/gtest
 ```    
 
 # Documentation #
